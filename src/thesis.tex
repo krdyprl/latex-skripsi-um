@@ -1,86 +1,80 @@
 %--------------------------------------------------------------------%
 %
-% Berkas utama templat LaTeX.
+% Berkas utama templat Skripsi Universitas Negeri Malang.
 %
-% author Petra Barus, Peb Ruswono Aryan
-%
-%--------------------------------------------------------------------%
-%
-% Berkas ini berisi struktur utama dokumen LaTeX yang akan dibuat.
+% Diadaptasi dari templat Tesis IF-ITB (Petra Barus, Peb Ruswono Aryan)
+% mengikuti Pedoman Penulisan Karya Ilmiah UM Edisi 2017.
 %
 %--------------------------------------------------------------------%
 
 \documentclass[12pt, a4paper, onecolumn, oneside, final]{report}
 
 \input{config/if-itb-thesis.sty}
-
-\makeatletter
-
-\makeatother
+\input{config/informations}
 
 \bibliography{references}
 
 \begin{document}
 
-    %Basic configuration
-    \title{Panduan Tugas Akhir Informatika}
+    \title{\judul}
+    \author{\penulis}
     \date{}
-    \author{
-        Petra Novandi Barus \\
-        NIM 13505059
-    }
 
+    %----------------------------------------------------------------%
+    % Bagian awal — nomor halaman romawi, tengah bawah.
+    %----------------------------------------------------------------%
     \pagenumbering{roman}
-    \setcounter{page}{0}
+    \setcounter{page}{1}
 
     \input{chapters/cover}
+    \input{chapters/logo}
+    \input{chapters/title-page}
     \input{chapters/approval}
+    \input{chapters/endorsement}
     \input{chapters/statement}
 
     \pagestyle{plain}
 
-    \input{chapters/abstract-id}
-    \input{chapters/abstract-en}
-    \input{chapters/forewords}
-
-    \titleformat*{\section}{\centering\bfseries\Large\MakeUpperCase}
+    \input{chapters/abstract-id}   % Ringkasan
+    \input{chapters/abstract-en}   % Summary
+    \input{chapters/forewords}     % Kata Pengantar
 
     \tableofcontents
-    \listoffigures
     \listoftables
+    \listoffigures
 
-    \titleformat*{\section}{\bfseries\Large}
+    %----------------------------------------------------------------%
+    % Bagian inti — nomor halaman arabic; kanan atas, awal bab tengah bawah.
+    %----------------------------------------------------------------%
+    \pagestyle{fancy}
     \pagenumbering{arabic}
+    \setcounter{page}{1}
 
-    %----------------------------------------------------------------%
-    % Konfigurasi Bab
-    %----------------------------------------------------------------%
-    \setcounter{page}{0}
-    \renewcommand{\chaptername}{BAB}
-    \renewcommand{\thechapter}{\Roman{chapter}}
-    %----------------------------------------------------------------%
-
-    %----------------------------------------------------------------%
-    % Dafter Bab
-    % Untuk menambahkan daftar bab, buat berkas bab misalnya `chapter-6` di direktori `chapters`, dan masukkan ke sini.
-    %----------------------------------------------------------------%
     \input{chapters/chapter-1}
     \input{chapters/chapter-2}
     \input{chapters/chapter-3}
     \input{chapters/chapter-4}
     \input{chapters/chapter-5}
+
+    % Daftar Rujukan (gaya APA)
+    \printbibliography[title={DAFTAR RUJUKAN}]
+    \addcontentsline{toc}{chapter}{Daftar Rujukan}
+
     %----------------------------------------------------------------%
-
-    % Daftar pustaka
-    \printbibliography
-
-    % Index
+    % Lampiran — label "Lampiran <angka>".
+    %----------------------------------------------------------------%
     \appendix
+    \renewcommand{\thechapter}{\arabic{chapter}}
+    \titleformat{\chapter}[display]
+      {\normalsize\bfseries\centering}
+      {Lampiran\ \thechapter}{0pt}
+      {\MakeUppercase}
 
-    \addcontentsline{toc}{part}{Lampiran}
-    \part*{Lampiran}
+    \addcontentsline{toc}{chapter}{Lampiran}
 
     \input{chapters/appendix-1}
     \input{chapters/appendix-2}
+
+    \input{chapters/biography}     % Riwayat Hidup
 
 \end{document}

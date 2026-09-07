@@ -1,0 +1,7 @@
+{
+    "latex-workshop.linting.chktex.exec.args": [
+        "--miktex-disable-maintenance",
+        "--miktex-disable-diagnose",
+        "--miktex-disable-installer"
+    ]
+}

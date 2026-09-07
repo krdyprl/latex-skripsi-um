@@ -1,0 +1,79 @@
+%--------------------------------------------------------------------%
+%
+% Berkas utama templat Skripsi Universitas Negeri Malang.
+%
+% mengikuti Pedoman Penulisan Karya Ilmiah UM Edisi 2017.
+%
+%--------------------------------------------------------------------%
+
+\documentclass[12pt, a4paper, onecolumn, oneside, final]{report}
+
+\input{config/if-itb-thesis.sty}
+\input{config/informations}
+
+\bibliography{references}
+
+\begin{document}
+
+    \title{\judul}
+    \author{\penulis}
+    \date{}
+
+    %----------------------------------------------------------------%
+    % Bagian awal — nomor halaman romawi, tengah bawah.
+    %----------------------------------------------------------------%
+    \pagenumbering{roman}
+    \setcounter{page}{1}
+
+    \input{chapters/cover}
+    \input{chapters/logo}
+    \input{chapters/title-page}
+    \input{chapters/approval}
+    \input{chapters/endorsement}
+    \input{chapters/statement}
+
+    \pagestyle{plain}
+
+    \input{chapters/abstract-id}   % Ringkasan
+    \input{chapters/abstract-en}   % Summary
+    \input{chapters/forewords}     % Kata Pengantar
+
+    \tableofcontents
+    \listoftables
+    \listoffigures
+
+    %----------------------------------------------------------------%
+    % Bagian inti — nomor halaman arabic; kanan atas, awal bab tengah bawah.
+    %----------------------------------------------------------------%
+    \pagestyle{fancy}
+    \pagenumbering{arabic}
+    \setcounter{page}{1}
+
+    \input{chapters/chapter-1}
+    \input{chapters/chapter-2}
+    \input{chapters/chapter-3}
+    \input{chapters/chapter-4}
+    \input{chapters/chapter-5}
+
+    % Daftar Rujukan (gaya APA)
+    \printbibliography[title={DAFTAR RUJUKAN}]
+    \addcontentsline{toc}{chapter}{Daftar Rujukan}
+
+    %----------------------------------------------------------------%
+    % Lampiran — label "Lampiran <angka>".
+    %----------------------------------------------------------------%
+    \appendix
+    \renewcommand{\thechapter}{\arabic{chapter}}
+    \titleformat{\chapter}[display]
+      {\normalsize\bfseries\centering}
+      {Lampiran\ \thechapter}{0pt}
+      {\MakeUppercase}
+
+    \addcontentsline{toc}{chapter}{Lampiran}
+
+    \input{chapters/appendix-1}
+    \input{chapters/appendix-2}
+
+    \input{chapters/biography}     % Riwayat Hidup
+
+\end{document}

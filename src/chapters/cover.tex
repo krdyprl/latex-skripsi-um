@@ -1,50 +1,36 @@
 %--------------------------------------------------------------------%
 %
-% Halaman sampul
+% Halaman Sampul Skripsi (Pedoman UM Lampiran 1a)
 %
-% @author Petra Novandi
-%
-%--------------------------------------------------------------------%
-%
-% Judul dan nama penulis diambil dari \title dan \author di thesis.tex.
-% Sesuaikan tanggal dan gambar sampul sesuai kebutuhan.
+% Nilai diambil dari config/informations.tex.
 %
 %--------------------------------------------------------------------%
 
 \clearpage
-\pagestyle{empty}
+\thispagestyle{empty}
 
 \begin{center}
-\smallskip
+    \setstretch{1.5}
 
-    \Large \bfseries \MakeUppercase{\thetitle}
+    \bfseries \MakeUppercase{\judul}
     \vfill
 
-    \Large Laporan Tugas Akhir
+    SKRIPSI
     \vfill
 
-    \large Disusun sebagai syarat kelulusan tingkat sarjana
+    OLEH \\
+    \MakeUppercase{\penulis} \\
+    NIM \nim%
     \vfill
 
-    \large Oleh
-
-    \Large \theauthor
-
-    \vfill
-    \begin{figure}[h]
-        \centering
-      	\includegraphics[width=0.15\textwidth]{resources/cover-ganesha.jpg}
-    \end{figure}
+    % Lambang UM (diameter 3 cm)
+    \includegraphics[width=3cm]{resources/logo-um.png}
     \vfill
 
-    \large
-    \uppercase{
-        Program Studi Teknik Informatika \\
-        Sekolah Teknik Elektro dan Informatika \\
-        Institut Teknologi Bandung
-    }
-
-    November 2016
+    \MakeUppercase{Universitas Negeri Malang} \\
+    \MakeUppercase{\fakultas} \\
+    \MakeUppercase{\programstudi} \\
+    \MakeUppercase{\bulantahun}
 
 \end{center}
 

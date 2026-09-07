@@ -1,10 +1,10 @@
-# Templat LaTeX Tesis Informatika ITB
+# Templat LaTeX Skripsi Universitas Negeri Malang (UM)
 
 [![Build](https://github.com/petrabarus/if-itb-latex/actions/workflows/build.yml/badge.svg)](https://github.com/petrabarus/if-itb-latex/actions/workflows/build.yml)
 
-**oleh:** Petra Novandi · [me@petrabarus.net](mailto:me@petrabarus.net)
+Templat LaTeX skripsi (S-1) yang mengikuti **Pedoman Penulisan Karya Ilmiah Universitas Negeri Malang (Edisi 2017)**: margin 4/3/3/3 cm, Times New Roman 12 pt, spasi 1,5, indent paragraf 1,2 cm, penomoran bab "BAB I" dengan subbab `1.1`, gambar/tabel bernomor per bab, dan daftar rujukan gaya APA (`biblatex-apa` + `biber`).
 
-Dokumen ini merupakan templat LaTeX yang ditujukan untuk laporan tesis di program studi Teknik Informatika ITB. Templat ini penulis gunakan dalam penulisan laporan tesis penulis dan dengan semangat berbagi penulis memutuskan untuk mempublikasikan templat ini agar dapat digunakan oleh banyak orang.
+Diadaptasi dari templat Tesis IF-ITB oleh Petra Novandi / Steven Lolong. Silakan gunakan, modifikasi, dan sebarkan.
 
 Silakan mengunduh, menggunakan, memodifikasi, dan menyebarkan templat ini. :)
 
@@ -63,33 +63,37 @@ src/
 ├── thesis.tex              # Berkas utama; atur judul, penulis, dan daftar bab
 ├── references.bib          # Database referensi bibliografi
 ├── config/
-│   ├── if-itb-thesis.sty   # Pengaturan format dokumen
-│   ├── informations.tex    # Informasi umum tesis
+│   ├── if-itb-thesis.sty   # Pengaturan format (aturan UM)
+│   ├── informations.tex    # Metadata skripsi — SUNTING DI SINI SAJA
 │   └── hypenation-id.tex   # Aturan pemenggalan kata Bahasa Indonesia
 ├── resources/
-│   ├── cover-ganesha.jpg
+│   ├── cover-ganesha.jpg   # PLACEHOLDER logo — ganti dengan logo UM
 │   ├── chapter-2-infrastructure-diagram.png
 │   ├── chapter-3-sample-requirements.csv
 │   └── chapter-3-sample-components.csv
 └── chapters/
-    ├── cover.tex           # Halaman sampul
-    ├── approval.tex        # Lembar persetujuan
-    ├── statement.tex       # Lembar pernyataan
-    ├── abstract-id.tex     # Abstrak Bahasa Indonesia
-    ├── abstract-en.tex     # Abstract (English)
+    ├── cover.tex           # Halaman sampul (Lampiran 1a)
+    ├── logo.tex            # Lembar logo (Lampiran 2)
+    ├── title-page.tex      # Halaman judul (Lampiran 3a)
+    ├── approval.tex        # Persetujuan pembimbing (Lampiran 4a)
+    ├── endorsement.tex     # Persetujuan & pengesahan (Lampiran 5a)
+    ├── statement.tex       # Pernyataan keaslian (Lampiran 6)
+    ├── abstract-id.tex     # Ringkasan (Lampiran 7a)
+    ├── abstract-en.tex     # Summary (versi Inggris)
     ├── forewords.tex       # Kata pengantar
+    ├── biography.tex       # Riwayat hidup (Lampiran 13)
     ├── chapter-1.tex … chapter-5.tex
     └── appendix-1.tex, appendix-2.tex
 ```
 
 ## Menulis Tesis
 
-- Setiap berkas `.tex` memiliki komentar header di bagian atas yang menjelaskan fungsi berkas tersebut.
-- Atur `\title` dan `\author` di `src/thesis.tex`.
+- Isi seluruh metadata (judul, penulis, NIM, jurusan, pembimbing, kata kunci, dll.) **hanya di `src/config/informations.tex`** — semua halaman front matter mengambil nilainya dari sana.
+- Ganti logo di `src/resources/cover-ganesha.jpg` dengan logo UM (diameter 3 cm untuk sampul, 8 cm untuk lembar logo).
 - Tulis isi bab di `src/chapters/chapter-N.tex`. Untuk menambah bab baru, buat berkas baru lalu tambahkan `\input{chapters/chapter-N}` di `thesis.tex`.
-- Bab I–V dilengkapi teks panduan sebelum placeholder; ganti dengan isi sebenarnya saat menulis.
-- Teks placeholder (`\blindtext`) tersedia di bab, subbab, dan subsubbab — contoh struktur subbab ada di Bab III dan IV.
-- Tambahkan referensi di `src/references.bib` dan sitasi dengan `\parencite{key}`.
+- Hierarki judul UM (Bab 8) sudah otomatis: `\chapter` → "BAB I" (tengah, kapital), `\section` → subbab kapital, `\subsection` → sub-sub bab, `\subsubsection` → bagian (miring). Nomor subbab arabic (`1.1`).
+- Tambahkan referensi di `src/references.bib` dan sitasi dengan `\parencite{key}`/`\textcite{key}`. Daftar Rujukan otomatis gaya APA.
+- **Gambar**: letakkan `\caption` di **bawah** gambar. **Tabel**: letakkan `\caption` di **atas** tabel (Pedoman UM). Keduanya bernomor per bab (`Gambar 3.1`, `Tabel 3.1`).
 
 ### Tabel dari CSV
 
