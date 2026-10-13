@@ -1,0 +1,54 @@
+%--------------------------------------------------------------------%
+%
+% Driver khusus konversi ke DOCX (pandoc).
+%
+% JANGAN dipakai untuk membangun PDF. Berkas ini sengaja TIDAK memuat
+% if-itb-thesis.sty, daftar isi/tabel/gambar, atau \printbibliography
+% karena hal-hal tersebut tidak dikenali pandoc dan ditangani oleh
+% opsi pandoc (--toc, --citeproc) serta reference.docx.
+%
+% Halaman tata letak (sampul, logo, halaman judul, persetujuan,
+% pengesahan, pernyataan) SENGAJA tidak disertakan karena hanya berupa
+% tata letak LaTeX murni yang tidak dapat direproduksi di DOCX. Halaman
+% tersebut tetap ada di PDF (thesis.tex). DOCX berfokus pada isi:
+% Ringkasan, Summary, Kata Pengantar, bab, daftar rujukan, lampiran,
+% dan riwayat hidup.
+%
+% PENTING: Jaga agar daftar \input di bawah tetap sinkron dengan
+% src/thesis.tex. Bila menambah/menghapus bab, ubah keduanya.
+%
+%--------------------------------------------------------------------%
+
+\documentclass[12pt,a4paper,onecolumn,oneside,final]{report}
+
+\input{config/informations}
+
+\begin{document}
+
+    %------------------------------------------------------------%
+    % Bagian awal (isi; halaman tata letak sengaja dilewati)
+    %------------------------------------------------------------%
+    \input{chapters/abstract-id}   % Ringkasan
+    \input{chapters/abstract-en}   % Summary
+    \input{chapters/forewords}     % Kata Pengantar
+
+    %------------------------------------------------------------%
+    % Bagian inti
+    %------------------------------------------------------------%
+    \input{chapters/chapter-1}
+    \input{chapters/chapter-2}
+    \input{chapters/chapter-3}
+    \input{chapters/chapter-4}
+    \input{chapters/chapter-5}
+
+    %------------------------------------------------------------%
+    % Lampiran & riwayat hidup
+    %------------------------------------------------------------%
+    \appendix
+
+    \input{chapters/appendix-1}
+    \input{chapters/appendix-2}
+
+    \input{chapters/biography}     % Riwayat Hidup
+
+\end{document}

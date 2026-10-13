@@ -30,6 +30,8 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{amsmath}        % Persamaan matematika (\text, \frac, align, dll.)
+\usepackage{amssymb}        % Simbol matematika tambahan (mis. \mathbb)
 \usepackage{titling}
 \usepackage{blindtext}
 \usepackage{chngcntr}
@@ -37,9 +39,13 @@
 \usepackage{setspace}       % Spasi 1,5 (isi) & tunggal (ringkasan/caption/rujukan)
 \usepackage{caption}        % Format judul tabel/gambar
 \usepackage{csvsimple}      % Tabel otomatis dari berkas CSV
+\usepackage{tabularx}       % Tabel lebar otomatis (kolom X) agar pas \textwidth
+\usepackage{longtable}      % Tabel panjang yang dapat terpotong antar-halaman
 \usepackage{fancyhdr}       % Nomor halaman UM
 \usepackage{hyperref}       % Tautan di daftar isi
 \usepackage{titlesec}       % Format judul bab/subbab
+\usepackage{indentfirst}
+
 
 % Spasi 1,5 untuk teks induk
 \onehalfspacing%
@@ -63,17 +69,21 @@
 
 % Subbab: KAPITAL, bold, tepi kiri
 \titleformat{\section}
-  {\normalsize\bfseries\filright}{\thesection}{1em}{\MakeUppercase}
+  {\normalsize\bfseries\filright}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{1.5\baselineskip}{0.75\baselineskip}
 % Sub-sub bab: Title Case, bold, tepi kiri
 \titleformat{\subsection}
   {\normalsize\bfseries\filright}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{1.2\baselineskip}{0.5\baselineskip}
 % Bagian sub-sub bab: Title Case, bold, italic, tepi kiri
 \titleformat{\subsubsection}
   {\normalsize\bfseries\itshape\filright}{\thesubsubsection}{1em}{} % chktex 6
+\titlespacing*{\subsubsection}{0pt}{1.0\baselineskip}{0.5\baselineskip}
 
-% Counter gambar & tabel per bab (Gambar 3.1, Tabel 3.1)
+% Counter gambar, tabel, & persamaan per bab (Gambar 3.1, Tabel 3.1, Persamaan 2.1)
 \counterwithin{figure}{chapter}
 \counterwithin{table}{chapter}
+\counterwithin{equation}{chapter}
 
 % Label caption bold; nama Indonesia
 \captionsetup{labelfont=bf,labelsep=space}

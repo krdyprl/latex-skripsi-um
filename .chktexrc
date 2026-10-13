@@ -12,4 +12,5 @@ CmdLine
     -n 26
     -n 27
     -n 36
+    -n 44   % Aturan tabel (garis vertikal / booktabs) — gaya tabel templat memakai grid
 }

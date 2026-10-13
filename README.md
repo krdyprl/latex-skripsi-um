@@ -56,11 +56,42 @@ make.bat
 
 Hasil kompilasi berada di `dist/thesis.pdf`. File sementara latexmk disimpan di direktori `build/` (keduanya diabaikan oleh git).
 
+## Ekspor ke Word (DOCX)
+
+Seluruh skripsi dapat diekspor ke Word (`.docx`) yang dapat diedit menggunakan [pandoc](https://pandoc.org/installing.html) 3.x. Sumbernya sama dengan PDF, jadi tidak ada isi yang perlu ditulis dua kali.
+
+**Windows (PowerShell):**
+
+```powershell
+.\docx.ps1                 # -> dist/thesis.docx
+.\docx.ps1 -Nama "draft"   # -> dist/draft.docx
+```
+
+**Command Prompt:** `docx.bat`
+
+**Linux/macOS:**
+
+```bash
+make docx                  # -> dist/thesis.docx
+```
+
+Ekspor **sebagian** (mis. satu bab) juga bisa ke Word:
+
+```powershell
+.\excerpt.ps1 -Pilih "bab2" -Format docx   # -> dist/excerpt-bab2.docx
+.\excerpt.ps1 -Pilih "bab1" -Format both   # PDF + Word sekaligus
+```
+
+Proses ini mengekspansi `\input{...}` dan `\csvautotabular{...}` lebih dulu (via `docs/pandoc/preprocess.lua`), lalu mengonversi memakai `docs/pandoc/reference.docx` (gaya & margin UM), `docs/pandoc/apa.csl` (sitasi APA), dan filter `docs/pandoc/postprocess.lua` (page break, penomoran "BAB I"/"1.1", judul DAFTAR RUJUKAN). Driver `src/thesis-docx.tex` memuat bab yang sama dengan `src/thesis.tex` — **ubah keduanya bila menambah/menghapus bab.**
+
+Isi DOCX: Ringkasan → Summary → Kata Pengantar → DAFTAR ISI → BAB I–V → DAFTAR RUJUKAN → Lampiran → Riwayat Hidup, masing-masing di halaman baru. Sudah rapi: teks, bab/subbab, rumus (OMML), tabel (termasuk dari CSV), gambar, serta sitasi & Daftar Rujukan gaya APA. **Halaman tata letak** (sampul, logo, halaman judul, persetujuan, pengesahan, pernyataan) hanya ada di PDF. Daftar tabel/gambar dan rujukan persamaan belum otomatis. Rincian ada di [docs/TUTORIAL.md](docs/TUTORIAL.md#ekspor-ke-word-docx).
+
 ## Struktur Proyek
 
 ```text
 src/
 ├── thesis.tex              # Berkas utama; atur judul, penulis, dan daftar bab
+├── thesis-docx.tex         # Driver ekspor DOCX (pandoc); jaga sinkron dengan thesis.tex
 ├── references.bib          # Database referensi bibliografi
 ├── config/
 │   ├── if-itb-thesis.sty   # Pengaturan format (aturan UM)
@@ -114,7 +145,7 @@ Tabel dengan `\caption` otomatis masuk ke **Daftar Tabel**. Simpan berkas CSV di
 
 GitHub Actions menjalankan job **Validate LaTeX** (`make validate` dengan chktex dan pemeriksaan berkas resource) pada pull request ke `main`/`master`. Job **Build PDF** hanya dijalankan pada push ke `main`/`master`.
 
-Jika Anda tidak ingin membangun PDF secara lokal, cukup **push** perubahan ke branch `main` atau `master` di fork repositori Anda. GitHub Actions akan mengompilasi tesis dan mengunggah hasilnya sebagai artifact **`thesis-pdf`**. Unduh PDF terbaru dari tab **Actions** → pilih workflow run → bagian **Artifacts**:
+Jika Anda tidak ingin membangun PDF secara lokal, cukup **push** perubahan ke branch `main` atau `master` di fork repositori Anda. GitHub Actions akan mengompilasi tesis dan mengunggah hasilnya sebagai artifact **`thesis-pdf`**. Job terpisah juga membuat DOCX dan mengunggahnya sebagai artifact **`thesis-docx`**. Unduh keduanya dari tab **Actions** → pilih workflow run → bagian **Artifacts**:
 
 ![Unduh thesis-pdf dari GitHub Actions Artifacts](docs/artifacts.png)
 

@@ -27,6 +27,7 @@ build pertama, sampai mengisi seluruh isi skripsi dan menghasilkan `dist/thesis.
 6. [Menambah atau mengurangi bab](#6-menambah-atau-mengurangi-bab)
 7. [Menjalankan build dan membersihkan](#7-menjalankan-build-dan-membersihkan)
    - [Membangun hanya sebagian (ekspor pilihan)](#membangun-hanya-sebagian-ekspor-pilihan)
+   - [Ekspor ke Word (DOCX)](#ekspor-ke-word-docx)
 8. [Validasi dan GitHub Actions](#8-validasi-dan-github-actions)
 9. [FAQ pemecahan masalah](#9-faq-pemecahan-masalah)
 10. [Daftar periksa akhir](#10-daftar-periksa-akhir)
@@ -721,6 +722,8 @@ membangun PDF dari bab/bagian yang Anda pilih saja, tanpa mengubah
 .\excerpt.ps1 -Pilih "bab2[1]"     # hanya section 1 pada BAB II
 .\excerpt.ps1 -Pilih lamp1         # Lampiran 1
 .\excerpt.ps1 -Pilih "bab2[1]" -Nama review  # nama file bebas
+.\excerpt.ps1 -Pilih "bab2" -Format docx     # Word: dist/excerpt-bab2.docx
+.\excerpt.ps1 -Pilih "bab1" -Format both     # PDF + Word sekaligus
 ```
 
 ```bat
@@ -728,11 +731,13 @@ REM Command Prompt / klik ganda — cukup nama berkas, tanpa .\
 excerpt.bat
 excerpt.bat bab2
 excerpt.bat "bab1,ringkasan"
+excerpt.bat bab2 "" docx
 ```
 
 Tanpa argumen (`excerpt.ps1` atau `excerpt.bat` tanpa `-Pilih`), tampil menu
 interaktif: ketik kode pilihan (dipisah koma), lalu jika memilih bab, Anda bisa
-memilih **seluruh bab** atau **section tertentu**.
+memilih **seluruh bab** atau **section tertentu**. Di akhir, menu menanyakan
+**format keluaran** (1 = PDF, 2 = Word, 3 = keduanya; kosong = PDF).
 
 ### Kode unit yang tersedia
 
@@ -744,12 +749,96 @@ memilih **seluruh bab** atau **section tertentu**.
 | `lamp1`, `lamp2` | Lampiran 1, Lampiran 2 |
 | `bio` | Riwayat Hidup |
 
-Hasilnya tersimpan sebagai `dist/excerpt-<nama>.pdf`. Catatan:
+Hasilnya tersimpan sebagai `dist/excerpt-<nama>.pdf` (atau `.docx` bila
+`-Format docx`). Catatan:
 
-- Urutan bab dalam PDF mengikuti urutan di `thesis.tex`, bukan urutan ketik.
+- Urutan bab dalam hasil mengikuti urutan di `thesis.tex`, bukan urutan ketik.
 - Bab yang memuat sitasi otomatis menyertakan **Daftar Rujukan**.
 - `subsection`/`subsubsection` ikut bersama `section` induknya.
 - `make.bat` (build penuh) tidak terpengaruh.
+- Ekspor **DOCX** memakai gaya yang sama dengan ekspor penuh (lihat
+  [Ekspor ke Word (DOCX)](#ekspor-ke-word-docx)): nomor bab tetap benar
+  (mis. `bab2` → "BAB II"), rumus jadi OMML, dan perlu **pandoc 3.x**.
+
+---
+
+## Ekspor ke Word (DOCX)
+
+Selain PDF, seluruh skripsi dapat diekspor ke **Word (`.docx`) yang dapat diedit**
+menggunakan [pandoc](https://pandoc.org/installing.html). Sumbernya sama dengan PDF —
+tidak ada isi yang perlu ditulis dua kali.
+
+### Prasyarat
+
+- **pandoc 3.x** terpasang dan ada di PATH:
+  - Windows: `winget install --id JohnMacFarlane.Pandoc -e`
+  - macOS: `brew install pandoc`
+  - Linux: `sudo apt-get install pandoc`
+- Build PDF tidak terpengaruh; keduanya membaca berkas `src/` yang sama.
+
+### Cara menjalankan
+
+```powershell
+# Windows (PowerShell) — muncul di terminal yang sama
+.\docx.ps1                 # -> dist/thesis.docx
+.\docx.ps1 -Nama "draft"   # -> dist/draft.docx
+```
+
+```bat
+REM Command Prompt / klik ganda
+docx.bat
+docx.bat draft
+```
+
+```bash
+# Linux/macOS
+make docx                  # -> dist/thesis.docx
+```
+
+CI juga membuat artifact **`thesis-docx`** pada setiap push ke `main`/`master`.
+
+### Cara kerja
+
+`docx.ps1` / `make docx` menjalankan tiga tahap:
+
+1. **Praproses** (`docs/pandoc/preprocess.lua`) — mengekspansi semua `\input{...}`
+   menjadi satu berkas datar, mengubah `\csvautotabular{...}` menjadi tabel LaTeX,
+   menormalkan lingkungan matematika (`align` → `aligned`), serta menandai
+   `\clearpage`, `\appendix`, dan lokasi Daftar Rujukan.
+2. **Konversi** dengan pandoc, memakai `docs/pandoc/reference.docx` (gaya & margin
+   UM), `docs/pandoc/apa.csl` (sitasi APA), dan filter `docs/pandoc/postprocess.lua`
+   yang menambahkan page break, penomoran "BAB I"/"1.1", dan judul DAFTAR RUJUKAN.
+3. **Pembersihan** berkas sementara `src/_docx.tex`.
+
+Driver khusus `src/thesis-docx.tex` memuat bab yang sama dengan `src/thesis.tex`,
+**kecuali halaman tata letak** (sampul, logo, halaman judul, persetujuan, pengesahan,
+pernyataan) yang sengaja dilewati. **Bila menambah/menghapus bab, ubah kedua berkas
+agar tetap sinkron.**
+
+### Yang ada di DOCX
+
+Isi mengikuti urutan: **Ringkasan → Summary → Kata Pengantar → DAFTAR ISI →
+BAB I–V → DAFTAR RUJUKAN → Lampiran → Riwayat Hidup**, masing-masing dimulai pada
+halaman baru.
+
+| Sudah rapi | Disederhanakan / tidak ada |
+|---|---|
+| Teks, bab ("BAB I"), subbab ("1.1"), daftar bernomor | Halaman sampul, logo, halaman judul, persetujuan, pengesahan, pernyataan (hanya ada di PDF) |
+| Rumus matematika (OMML, dapat diedit di Word) | Daftar Tabel/Gambar tidak dibuat otomatis |
+| Tabel, termasuk yang dibaca dari CSV | Rujukan persamaan (`\eqref`) tampil sebagai penanda, bukan nomor |
+| Gambar | — |
+| Sitasi & Daftar Rujukan gaya APA | — |
+| Page break antar bagian & Daftar Isi (`DAFTAR ISI`) | — |
+
+### Menyesuaikan gaya
+
+Font, margin, dan spasi diatur di `docs/pandoc/reference.docx`, yang dibuat oleh
+`docs/pandoc/make-reference-docx.ps1`. Sunting skrip itu lalu jalankan ulang untuk
+menghasilkan `reference.docx` baru:
+
+```powershell
+.\docs\pandoc\make-reference-docx.ps1
+```
 
 ---
 
@@ -771,6 +860,8 @@ Repositori ini menyertakan CI di `.github/workflows/build.yml`:
   pemeriksaan berkas resource.
 - **Pada push** ke `main`/`master`: menginstal TeX Live, menjalankan `make build`,
   lalu mengunggah `dist/thesis.pdf` sebagai artifact bernama **`thesis-pdf`**.
+  Job terpisah juga menjalankan `make docx` (pandoc) dan mengunggah
+  `dist/thesis.docx` sebagai artifact **`thesis-docx`**.
 
 Cara memakai tanpa build lokal: *fork* repo ini, tulis skripsi, lalu *push* ke
 `main`/`master`. Buka tab **Actions**, pilih workflow *Build*, lalu di bagian

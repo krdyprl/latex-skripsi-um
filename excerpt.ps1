@@ -1,14 +1,19 @@
-# excerpt.ps1 - Ekspor selektif bagian skripsi ke PDF.
+# excerpt.ps1 - Ekspor selektif bagian skripsi ke PDF atau Word (DOCX).
 #
 # Cara pakai:
 #   .\excerpt.ps1                 -> mode interaktif (menu pilihan)
-#   .\excerpt.ps1 -Pilih "bab2"   -> seluruh BAB II
+#   .\excerpt.ps1 -Pilih "bab2"   -> seluruh BAB II (PDF)
 #   .\excerpt.ps1 -Pilih "bab1,bab3"
 #   .\excerpt.ps1 -Pilih "bab2[1]"            -> hanya section 1 (Dasar Teori) BAB II
 #   .\excerpt.ps1 -Pilih "bab2[1,2]"          -> section 1 dan 2
 #   .\excerpt.ps1 -Pilih "ringkasan,bab2[1]"  -> campur halaman awal + bagian bab
 #   .\excerpt.ps1 -Pilih "lamp1"              -> Lampiran 1
 #   .\excerpt.ps1 -Pilih "bab2" -Nama "bab2-untuk-review"  -> nama file bebas
+#   .\excerpt.ps1 -Pilih "bab2" -Format docx  -> hasil Word (dist/excerpt-bab2.docx)
+#
+# Format keluaran: -Format pdf (bawaan) atau -Format docx.
+# Ekspor DOCX memerlukan pandoc 3.x dan mengikuti gaya DOCX skripsi
+# (lihat docs/TUTORIAL.md bagian "Ekspor ke Word").
 #
 # Kode unit yang tersedia (urutan = urutan di thesis.tex):
 #   cover logo title approval endorsement statement
@@ -20,7 +25,9 @@
 [CmdletBinding()]
 param(
     [string]$Pilih = "",
-    [string]$Nama = ""
+    [string]$Nama = "",
+    [ValidateSet('pdf', 'docx', 'both')]
+    [string]$Format = "pdf"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -79,7 +86,7 @@ function Get-Slug {
 # ---------------------------------------------------------------------
 function Show-Menu {
     Write-Host ""
-    Write-Host "=== EKSPOR BAGIAN SKRIPSI (PDF) ===" -ForegroundColor Cyan
+    Write-Host "=== EKSPOR BAGIAN SKRIPSI (PDF / Word) ===" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Ketik kode pilihan, pisahkan dengan koma. Contoh: bab2  atau  bab1,ringkasan  atau  bab2[1,2]"
     Write-Host ""
@@ -205,23 +212,45 @@ function Resolve-Seleksi {
 # Bangun driver LaTeX
 # ---------------------------------------------------------------------
 function New-Driver {
-    param($Units, [string]$PartPrefix)
+    param($Units, [string]$Format = 'pdf')
+    $isDocx = ($Format -eq 'docx')
     $sb = New-Object System.Text.StringBuilder
     [void]$sb.AppendLine('% Berkas sementara dibuat oleh excerpt.ps1')
     [void]$sb.AppendLine('\documentclass[12pt,a4paper,onecolumn,oneside,final]{report}')
-    [void]$sb.AppendLine('\input{config/if-itb-thesis.sty}')
-    [void]$sb.AppendLine('\input{config/informations}')
-    [void]$sb.AppendLine('\bibliography{references}')
+    if ($isDocx) {
+        # Driver DOCX: tanpa .sty (tidak dikenali pandoc). Nomor bab dijaga
+        # lewat penanda @@CHAPSTART:n@@ yang dibaca docs/pandoc/postprocess.lua.
+        [void]$sb.AppendLine('\input{config/informations}')
+    }
+    else {
+        [void]$sb.AppendLine('\input{config/if-itb-thesis.sty}')
+        [void]$sb.AppendLine('\input{config/informations}')
+        [void]$sb.AppendLine('\bibliography{references}')
+    }
     [void]$sb.AppendLine('\begin{document}')
-    [void]$sb.AppendLine('\pagenumbering{arabic}')
-    [void]$sb.AppendLine('\setcounter{page}{1}')
-    [void]$sb.AppendLine('\pagestyle{plain}')
+    if (-not $isDocx) {
+        [void]$sb.AppendLine('\pagenumbering{arabic}')
+        [void]$sb.AppendLine('\setcounter{page}{1}')
+        [void]$sb.AppendLine('\pagestyle{plain}')
+    }
 
     $hasBab = $false
     $hasLamp = $false
     foreach ($u in $Units) {
         if ($u.cat.kind -eq 'bab') { $hasBab = $true }
         if ($u.cat.kind -eq 'lamp') { $hasLamp = $true }
+    }
+
+    # Penanda DOCX harus berdiri sebagai paragraf sendiri (dipisah baris
+    # kosong) agar dibaca utuh oleh docs/pandoc/postprocess.lua.
+    function Add-Marker([string]$Marker) {
+        [void]$sb.AppendLine('')
+        [void]$sb.AppendLine($Marker)
+        [void]$sb.AppendLine('')
+    }
+    function Add-ChapterStart([int]$Num) {
+        if ($isDocx) { Add-Marker "@@CHAPSTART:$Num@@" }
+        else { [void]$sb.AppendLine("\setcounter{chapter}{$($Num - 1)}") }
     }
 
     $appendixDone = $false
@@ -233,8 +262,8 @@ function New-Driver {
                 [void]$sb.AppendLine("\input{$($cat.file)}")
             }
             'bab' {
+                Add-ChapterStart $cat.num
                 if ($u.full) {
-                    [void]$sb.AppendLine("\setcounter{chapter}{$($cat.num - 1)}")
                     [void]$sb.AppendLine("\input{$($cat.file)}")
                 }
                 else {
@@ -242,26 +271,35 @@ function New-Driver {
                     if (-not (Test-Path $part)) {
                         $part = New-BabPartFile -Bab $cat -SecIdx $u.sections
                     }
-                    [void]$sb.AppendLine("\setcounter{chapter}{$($cat.num - 1)}")
                     [void]$sb.AppendLine("\input{_excerpt-part$($cat.num)}")
                 }
             }
             'lamp' {
                 if (-not $appendixDone) {
-                    [void]$sb.AppendLine('\appendix')
-                    [void]$sb.AppendLine('\renewcommand{\thechapter}{\arabic{chapter}}')
-                    [void]$sb.AppendLine('\titleformat{\chapter}[display]{\normalsize\bfseries\centering}{Lampiran\ \thechapter}{0pt}{\MakeUppercase}')
+                    if ($isDocx) {
+                        # Daftar Rujukan mendahului lampiran (urutan UM).
+                        if ($hasBab -and -not $bibWritten) {
+                            Add-Marker '@@REFS@@'
+                            $bibWritten = $true
+                        }
+                        Add-Marker '@@APPENDIX@@'
+                    }
+                    else {
+                        [void]$sb.AppendLine('\appendix')
+                        [void]$sb.AppendLine('\renewcommand{\thechapter}{\arabic{chapter}}')
+                        [void]$sb.AppendLine('\titleformat{\chapter}[display]{\normalsize\bfseries\centering}{Lampiran\ \thechapter}{0pt}{\MakeUppercase}')
+                    }
                     $appendixDone = $true
                 }
-                [void]$sb.AppendLine("\setcounter{chapter}{$($cat.num - 1)}")
+                Add-ChapterStart $cat.num
                 [void]$sb.AppendLine("\input{$($cat.file)}")
             }
             'bio' {
                 [void]$sb.AppendLine("\input{$($cat.file)}")
             }
         }
-        # Daftar Rujukan setelah bab terakhir (sebelum lampiran) jika ada bab
-        if ($hasBab -and $cat.kind -eq 'lamp' -and -not $bibWritten) {
+        # PDF: Daftar Rujukan setelah bab terakhir (sebelum lampiran) jika ada bab
+        if (-not $isDocx -and $hasBab -and $cat.kind -eq 'lamp' -and -not $bibWritten) {
             [void]$sb.AppendLine('\printbibliography[title={DAFTAR RUJUKAN}]')
             [void]$sb.AppendLine('\addcontentsline{toc}{chapter}{Daftar Rujukan}')
             $bibWritten = $true
@@ -270,8 +308,13 @@ function New-Driver {
 
     # Daftar Rujukan di akhir bila hanya lampiran/isi tanpa bab yang urutannya belum menulis
     if (-not $bibWritten -and ($hasBab -or $hasLamp)) {
-        [void]$sb.AppendLine('\printbibliography[title={DAFTAR RUJUKAN}]')
-        [void]$sb.AppendLine('\addcontentsline{toc}{chapter}{Daftar Rujukan}')
+        if ($isDocx) {
+            Add-Marker '@@REFS@@'
+        }
+        else {
+            [void]$sb.AppendLine('\printbibliography[title={DAFTAR RUJUKAN}]')
+            [void]$sb.AppendLine('\addcontentsline{toc}{chapter}{Daftar Rujukan}')
+        }
     }
 
     [void]$sb.AppendLine('\end{document}')
@@ -312,22 +355,89 @@ function Invoke-Build {
     $buildAbs = Join-Path $root 'build'
     $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 
+    # Bersihkan keluaran lama agar verifikasi memakai berkas yang segar.
+    $pdf = Join-Path $buildAbs '_excerpt.pdf'
+    Remove-Item -LiteralPath $pdf -Force -ErrorAction SilentlyContinue
+    $mkOut = Join-Path $buildAbs '_excerpt-latexmk.out'
+    Remove-Item -LiteralPath $mkOut -Force -ErrorAction SilentlyContinue
+
+    $started = Get-Date
     Push-Location (Join-Path $root 'src')
     try {
         $latexArgs = @('-pdf', '-interaction=nonstopmode', '-halt-on-error', "-outdir=$buildAbs", '_excerpt.tex')
-        & latexmk @latexArgs | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "latexmk gagal (kode $LASTEXITCODE). Lihat build\_excerpt.log"
-        }
+        # Alihkan SEMUA aliran ke berkas agar keluaran progres/stderr latexmk
+        # tidak diperlakukan sebagai error oleh $ErrorActionPreference='Stop'.
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        & latexmk @latexArgs *> $mkOut
+        $code = $LASTEXITCODE
+        $ErrorActionPreference = $prevEAP
     }
     finally {
         Pop-Location
     }
 
-    $pdf = Join-Path $root "build\_excerpt.pdf"
-    if (-not (Test-Path $pdf)) { throw "PDF tidak ditemukan: $pdf" }
+    # Verifikasi berdasarkan artefak, bukan hanya kode keluar: latexmk pada
+    # MiKTeX kadang melaporkan kode aneh (-1) walau PDF berhasil dibuat.
+    $ok = (Test-Path $pdf) -and ((Get-Item $pdf).LastWriteTime -ge $started)
+    if (-not $ok) {
+        $tail = ''
+        if (Test-Path $mkOut) {
+            $tail = (Get-Content $mkOut -Tail 15 -ErrorAction SilentlyContinue) -join [Environment]::NewLine
+        }
+        throw "latexmk gagal (kode $code) dan PDF tidak terbentuk. Lihat build\_excerpt.log.`n$tail"
+    }
+
     $dest = Join-Path $root "dist\excerpt-$OutBase.pdf"
     Copy-Item -LiteralPath $pdf -Destination $dest -Force
+    return $dest
+}
+
+# ---------------------------------------------------------------------
+# Bangun DOCX via pandoc
+# ---------------------------------------------------------------------
+function Get-PandocPath {
+    $cmd = Get-Command pandoc -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+    $candidates = @(
+        (Join-Path $env:LOCALAPPDATA 'Pandoc\pandoc.exe'),
+        (Join-Path $env:ProgramFiles 'Pandoc\pandoc.exe')
+    )
+    foreach ($c in $candidates) { if (Test-Path -LiteralPath $c) { return $c } }
+    throw "pandoc tidak ditemukan. Pasang dari https://pandoc.org/installing.html"
+}
+
+function Invoke-BuildDocx {
+    param([string]$DrvPath, [string]$OutBase)
+    New-Item -ItemType Directory -Path (Join-Path $root 'dist') -Force | Out-Null
+    $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+    $pandoc = Get-PandocPath
+    $dest = Join-Path $root "dist\excerpt-$OutBase.docx"
+
+    Push-Location (Join-Path $root 'src')
+    try {
+        # Ekspansi \input & penanda struktur agar dikenali pandoc.
+        & $pandoc lua ../docs/pandoc/preprocess.lua _excerpt.tex _excerpt-docx.tex
+        if ($LASTEXITCODE -ne 0) { throw "Praproses DOCX gagal (kode $LASTEXITCODE)." }
+
+        & $pandoc _excerpt-docx.tex `
+            -f latex -t docx `
+            --standalone `
+            --reference-doc=../docs/pandoc/reference.docx `
+            --lua-filter=../docs/pandoc/postprocess.lua `
+            --citeproc `
+            --bibliography=references.bib `
+            --csl=../docs/pandoc/apa.csl `
+            --metadata "reference-section-title=DAFTAR RUJUKAN" `
+            --resource-path=. `
+            -o $dest
+        if ($LASTEXITCODE -ne 0) { throw "Konversi DOCX gagal (kode $LASTEXITCODE)." }
+    }
+    finally {
+        Pop-Location
+    }
+
+    if (-not (Test-Path $dest)) { throw "DOCX tidak ditemukan: $dest" }
     return $dest
 }
 
@@ -371,20 +481,38 @@ try {
                 }
             }
         }
+        # pilih format keluaran (bawaan PDF)
+        Write-Host ""
+        Write-Host "Format keluaran:  1 = PDF   2 = Word (DOCX)   3 = Keduanya"
+        $fmtAns = (Read-Host 'Pilih format (1/2/3, kosong = PDF)').Trim()
+        switch ($fmtAns) {
+            '2' { $Format = 'docx' }
+            '3' { $Format = 'both' }
+            default { $Format = 'pdf' }
+        }
     }
 
     $units = @(Resolve-Seleksi -Items $items)
     if ($units.Count -eq 0) { throw 'Tidak ada pilihan valid.' }
 
-    $drv = New-Driver -Units $units
     $base = if ($Nama.Trim() -ne '') { (Get-Slug $Nama) } else { New-NamaOutput -Units $units }
-
     $ringkasan = ($units | ForEach-Object { if ($_.full) { $_.cat.key } else { "$($_.cat.key)[$($_.sections -join ',')]" } }) -join ', '
+
+    $formats = if ($Format -eq 'both') { @('pdf', 'docx') } else { @($Format) }
+    $hasil = @()
+    foreach ($fmt in $formats) {
+        $drv = New-Driver -Units $units -Format $fmt
+        Write-Host ""
+        Write-Host ("Membangun ({0}): {1}  ->  dist/excerpt-{2}.{0}" -f $fmt, $ringkasan, $base)
+        if ($fmt -eq 'docx') {
+            $hasil += Invoke-BuildDocx -DrvPath $drv -OutBase $base
+        }
+        else {
+            $hasil += Invoke-Build -DrvPath $drv -OutBase $base
+        }
+    }
     Write-Host ""
-    Write-Host ("Membangun: {0}  ->  dist/excerpt-{1}.pdf" -f $ringkasan, $base)
-    $dest = Invoke-Build -DrvPath $drv -OutBase $base
-    Write-Host ""
-    Write-Host ("SELESAI: {0}" -f $dest) -ForegroundColor Green
+    foreach ($h in $hasil) { Write-Host ("SELESAI: {0}" -f $h) -ForegroundColor Green }
 }
 catch {
     Write-Host ("GAGAL: {0}" -f $_.Exception.Message) -ForegroundColor Red

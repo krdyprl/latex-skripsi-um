@@ -20,7 +20,8 @@
 \noindent \textbf{Kata Kunci:} \katakunci%
 
 \vspace{\baselineskip}
-\blindtext%
+
+Dalam pemrosesan bahasa alami (NLP) model bahasa pra-latih seperti IndoBERT unggul pada berbagai tugas pemrosesan bahasa alami berbahasa Indonesia, tetapi ukuran parameternya yang besar membatasi penerapan pada perangkat dengan sumber daya terbatas. \textit{Post-Training Quantization} (PTQ) INT4 menjadi salah satu solusi kompresi, namun belum ada studi yang mengevaluasinya secara sistematis pada IndoBERT untuk domain finansial Indonesia. Penelitian ini mengevaluasi PTQ INT4 pada IndoBERT (\texttt{indobert\allowbreak\_base\allowbreak\_v1}) untuk analisis sentimen dan klasifikasi topik finansial menggunakan tiga dataset, yaitu IndoFinSent (2.274 entri), \textit{Indonesian Financial PhraseBank} (2.264 entri), dan dataset topik finansial Twitter (21.105 dokumen dengan 20 topik). Model di-\textit{fine-tune} pada presisi FP32 dengan \textit{learning rate} 3e-5, \textit{batch size} 16, dan 3 \textit{epoch}, kemudian dikuantisasi pada lapisan linear dengan cakupan \textit{weight-only} (W4A16) dan dibandingkan pada empat tingkat presisi, yaitu FP32, FP16, INT8, dan INT4. Performa diukur dengan Macro F1-Score dan accuracy, sedangkan efisiensi diukur melalui ukuran model, \textit{latency}, \textit{throughput}, dan rasio kompresi. Hasil penelitian menunjukkan bahwa [hasil eksperimen]. Temuan ini diharapkan memberikan gambaran mengenai kelayakan PTQ INT4 untuk \textit{deployment} IndoBERT pada perangkat dengan sumber daya terbatas di domain finansial Indonesia.
 
 \end{singlespace}
 \clearpage

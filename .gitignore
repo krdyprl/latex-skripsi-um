@@ -18,3 +18,5 @@ thesis.pdf
 .directory
 dist/*
 build/*
+_docx*.tex
+_excerpt*.tex

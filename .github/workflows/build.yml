@@ -52,3 +52,25 @@ jobs:
           name: thesis-pdf
           path: dist/thesis.pdf
           if-no-files-found: error
+
+  build-docx:
+    name: Build DOCX
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pandoc
+
+      - name: Build DOCX
+        run: make docx
+
+      - name: Upload DOCX artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: thesis-docx
+          path: dist/thesis.docx
+          if-no-files-found: error

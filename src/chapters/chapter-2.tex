@@ -1,6 +1,6 @@
 %--------------------------------------------------------------------%
 %
-% Bab II — Tinjauan Pustaka
+% Bab II — Kajian Pustaka
 %
 % @author Petra Novandi and Modified by Kardynan Parulian
 %
@@ -11,33 +11,238 @@
 %
 %--------------------------------------------------------------------%
 
-\chapter{Tinjauan Pustaka}
-Bab Studi Literatur digunakan untuk mendeskripsikan kajian literatur yang terkait dengan persoalan tugas akhir. Tujuan studi literatur adalah:
-\begin{enumerate}
-    \item menunjukkan kepada pembaca adanya gap seperti pada rumusan masalah yang memang belum terselesaikan,
-    \item memberikan pemahaman yang secukupnya kepada pembaca tentang teori atau pekerjaan terkait yang terkait langsung dengan penyelesaian persoalan, serta
-    \item menyampaikan informasi apa saja yang sudah ditulis/dilaporkan oleh pihak lain (peneliti/Tugas Akhir/Tesis) tentang hasil penelitian/pekerjaan mereka yang sama atau mirip kaitannya dengan persoalan tugas akhir.
-\end{enumerate}
+\chapter{Kajian Pustaka}
+\section{Pemrosesan Bahasa Alami}
+\textit{Natural Language Processing} (NLP) merupakan cabang kecerdasan buatan yang berfokus pada interaksi antara komputer dan bahasa manusia melalui pemahaman, penafsiran, serta penghasilan teks atau tuturan secara alami \parencite{jurafsky2025speech}. Pendekatan NLP bergeser dari penggunaan aturan linguistik manual menuju metode statistik dan pembelajaran mesin yang memungkinkan komputer mempelajari pola bahasa dari data. Pergeseran ini berlanjut ke \textit{deep learning} atau pembelajaran mendalam, yaitu pembelajaran menggunakan jaringan saraf berlapis yang mempelajari representasi bahasa secara otomatis dari data, sehingga ketergantungan pada rekayasa fitur manual berkurang \parencite{jurafsky2025speech}.
 
-\section{Konsep Dasar Pemrosesan Bahasa Alami(NLP) dan Arsitektur Transformer}
-Perujukan literatur dapat dilakukan dengan menambahkan entri baru di berkas. Tulisan ini merujuk pada \parencite{knuth2001art}
+Perkembangan \textit{deep learning} pada pemrosesan bahasa alami (NLP) ditandai dengan hadirnya Transformer, yaitu arsitektur jaringan saraf yang memproses sekuens data secara paralel menggunakan mekanisme \textit{self-attention} untuk mempelajari hubungan kontekstual antarkata \parencite{vaswani2017attention}. Keunggulan arsitektur ini dibandingkan model sebelumnya meliputi kemampuan pemrosesan paralel yang mempersingkat waktu pelatihan, penanganan konteks yang panjang, dan stabilitas pelatihan pada skala besar. Transformer kemudian menjadi dasar bagi pengembangan model bahasa pralatih \parencite{gardazi2025bert}, salah satunya \textit{Bidirectional Encoder Representations from Transformers} (BERT) yang dipublikasikan pada tahun 2018. BERT secara khusus menggunakan bagian \textit{encoder} dan dilatih secara \textit{bidirectional}, sehingga mampu mempertimbangkan konteks teks dari arah kiri maupun kanan secara bersamaan. Proses prapelatihan model ini memanfaatkan dua strategi utama, yakni \textit{Masked Language Model} (MLM) untuk memprediksi token yang ditutupi, dan \textit{Next Sentence Prediction} (NSP) \parencite{devlin2019bert}.
 
-    \subsection{Subbab}
+Pendekatan model pralatih tersebut selanjutnya diadaptasi ke dalam bahasa Indonesia melalui IndoBERT, yang dievaluasi kapabilitasnya menggunakan \textit{benchmark} IndoNLU melalui 12 tugas \textit{downstream} \parencite{wilie2020indonlu}. Salah satu tugas \textit{downstream} yang menjadi fokus pada penelitian ini adalah analisis sentimen, yang pada dasarnya merupakan tugas klasifikasi teks dan diselesaikan melalui proses \textit{fine-tuning} \parencite{devlin2019bert, wilie2020indonlu}. Secara konsep, jenis klasifikasi teks dibedakan oleh sifat ruang labelnya yaitu, \textit{binary classification} jika terdapat dua kelas dengan satu label per teks, \textit{multi-class classification} jika terdapat lebih dari dua kelas saling lepas, dan \textit{multi-label classification} jika satu teks dapat menerima lebih dari satu label \parencite{galke2025really}.
 
-    \blindtext%
+Salah satu bentuk dari klasifikasi teks adalah analisis sentimen, yaitu penentuan polaritas teks ke dalam kategori positif, negatif, atau netral \parencite{ferdous2024sentiment}. Kelas netral secara khusus diberikan pada teks yang tidak memuat tendensi positif maupun negatif. Mengingat terdapat tiga kelas yang saling lepas dengan penugasan satu label per teks, tugas analisis sentimen pada penelitian ini dikategorikan sebagai \textit{multi-class classification}.
 
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=0.8\textwidth]{resources/chapter-2-infrastructure-diagram.png}
-        \caption{Contoh gambar}
-    \end{figure}
+Lebih spesifik, analisis sentimen dapat diterapkan pada domain teks keuangan yang membahas kondisi atau peristiwa finansial, seperti berita ekonomi maupun unggahan media sosial terkait saham. Pada domain ini, \textcite{malo2014good} merumuskan penilaian teks dari sudut pandang investor—yakni dampak sentimen terhadap harga saham—yang kemudian diadaptasi menjadi skema tiga label pada \textit{Indonesian Financial PhraseBank} \parencite{maharani2023domain}. Teks keuangan memiliki karakteristik unik karena memuat istilah teknis, ekspresi numerik, dan makna sentimen yang sangat bergantung pada konteks \parencite{araci2019finbert, maharani2023domain}. Sejauh ini, pendekatan menggunakan IndoBERT untuk analisis sentimen teks keuangan berbahasa Indonesia telah diterapkan setidaknya dalam empat penelitian terdahulu \parencite{maharani2023domain, jiwandono2026finetuned}.
 
-    \subsubsection{Subsubbab}
+Meskipun memiliki kinerja yang baik, \textcite{tanjaya2025optimizing} melaporkan adanya indikasi \textit{overfitting} pada penerapan model berbasis Transformer untuk klasifikasi sentimen \textit{tweet} saham di Indonesia. Hal ini dibuktikan dengan [masukkan kalimat bukti: misal, "selisih akurasi sebesar X" antara data latih dan data uji"]. Selain tantangan evaluasi tersebut, ukuran model yang masif juga membatasi penerapannya pada perangkat dengan sumber daya komputasi terbatas \parencite{abdurrahman2023implementing}. Sebagai gambaran, model dasar IndoBERT memiliki [masukkan angka parameter: misal, "sekitar 110 juta"] parameter \parencite{wilie2020indonlu}. Rangkaian kondisi inilah yang memunculkan urgensi penerapan teknik kompresi model, salah satunya melalui kuantisasi, yang akan dieksplorasi lebih lanjut pada subbab berikutnya.
 
-    \blindtext%
+\section{Analisis Sentimen}
+Analisis sentimen pada teks keuangan merupakan tugas NLP yang bertujuan mengidentifikasi orientasi afektif dalam teks keuangan, seperti berita pasar, laporan perusahaan, atau komentar investor, ke dalam kategori positif, negatif, atau netral \parencite{maharani2023domain}. Tugas ini bergantung pada domain karena istilah keuangan memiliki makna yang berbeda dari bahasa umum \parencite{araci2019finbert}. Sebagai contoh, \textcite{maharani2023domain} memberi label netral pada kalimat yang hanya menyebutkan durasi dan nilai suatu proyek tanpa penilaian apa pun, walaupun kalimat tersebut memuat angka dan istilah proyek. Selain pendekatan berbasis leksikon \parencite{mishev2020evaluation}, tersedia model pra-latih seperti FinBERT yang dilatih khusus pada korpus keuangan \parencite{yang2020finbert}. Pada bahasa Indonesia, IndoBERT yang di-\textit{fine-tune} pada berita keuangan mencapai akurasi 0,94 dan Macro F1 sebesar 0,71, dengan catatan bahwa label pada data tersebut berupa \textit{pseudo-label} yang dihasilkan mesin, bukan label manusia \parencite{bimasena2026benchmarking}.
 
-\section{Model Bidirectional Encoder Representations from Transformers (BERT) dan Varian Bahasa Indonesia (IndoBERT)}
-\blindtext%
+Selain label diskret, sentimen dapat diformulasikan sebagai indikator kontinu yang merepresentasikan intensitas sentimen. \textcite{barter2026bondbert} menggunakan \textit{Normalised Difference Index} (NDI) dengan formula $s = (p_+ - p_-)/(p_+ + p_-)$, dengan $s \in [-1, 1]$, untuk mengukur sentimen pada data obligasi pemerintah Inggris. Menurut penulisnya, NDI tidak memberi ruang bagi kelas netral dan menonjolkan polaritas. \textcite{mishev2020evaluation} menggunakan formula serupa, yaitu $\text{Polarity} = (\text{Pos} - \text{Neg})/(\text{Pos} + \text{Neg})$, pada analisis sentimen berbasis leksikon. \textcite{kim2023forecasting} menggunakan pendekatan berbeda, yaitu menjumlahkan label (+1/0/$-$1) yang dikalikan probabilitas label tersebut per hari pada ringkasan artikel \textit{The New York Times}.
 
-\section{Testing Dulu}
-\blindtext%
+Formula yang diadopsi dalam penelitian ini adalah $S = P(\text{Positif}) - P(\text{Negatif})$, dengan $S \in [-1, 1]$. Secara matematis, $S$ merupakan nilai harapan label bernilai +1, 0, dan $-$1 di bawah distribusi probabilitas keluaran model, yaitu $S = \sum_{y \in \{+1,0,-1\}} y \, P(y)$. Bentuk ini sejalan dengan penjumlahan label berbobot probabilitas pada \textcite{kim2023forecasting}, tetapi diterapkan pada tingkat [kalimat/dokumen, sesuaikan] dan bukan agregasi harian. Perbedaan $S$ dengan NDI terletak pada penyebut $p_+ + p_-$.
+
+Ketika penyebut $p_+ + p_-$ bernilai kecil, selisih $p_+ - p_-$ yang kecil diperbesar oleh pembagian. Sebagai ilustrasi, pasangan $(p_+, p_-) = (0; 0{,}001)$ menghasilkan NDI sebesar $-1$, sedangkan $(0{,}001; 0)$ menghasilkan $+1$, padahal selisih probabilitasnya hanya 0,001 dan nilai $S$ masing-masing $-0{,}001$ dan $+0{,}001$. Pada Indonesian Financial PhraseBank yang 61,44\% berlabel netral \parencite{maharani2023domain}, penyebut dapat bernilai kecil pada prediksi netral dengan keyakinan tinggi. Gangguan numerik akibat presisi rendah pada kuantisasi dapat terbaca sebagai pergeseran besar pada NDI yang tidak mencerminkan perubahan perilaku model. Karena itu, penelitian ini memilih $S$ tanpa penyebut, sehingga massa probabilitas netral menekan nilai $S$ ke arah 0 alih-alih dibuang.
+
+Indikator kontinu ini relevan untuk mengevaluasi dampak kuantisasi karena kuantisasi dapat mengubah keluaran model meskipun akurasi nyaris sama. \textcite{sanjaya2026quantization} melaporkan akurasi IndoBERT pada SmSA sebesar [isi FP32] pada FP32 dan [isi] setelah kuantisasi, sedangkan korelasi Spearman untuk stabilitas atribusi turun dari 0,967 pada PTQ-INT8 menjadi sekitar 0,55 pada varian QAT setelah ekspor ONNX. Kesesuaian (\textit{agreement}) prediksi PTQ-INT4 terhadap FP32 sebesar 0,974, yang berarti sekitar 2,6\% prediksi berubah. Temuan ini menunjukkan bahwa perubahan perilaku model akibat kuantisasi tidak terlihat pada akurasi saja, sehingga diperlukan ukuran tambahan yang bekerja pada keluaran probabilitas.
+
+\section{BERT dan IndoBERT}
+
+\subsection{BERT}
+
+BERT diperkenalkan oleh \textcite{devlin2019bert} sebagai model bahasa pra-latih yang menggunakan \textit{encoder} Transformer secara dua arah (\textit{bidirectional}). BERT dilatih dengan dua tugas, yaitu \textit{Masked Language Modeling} (MLM) dan \textit{Next Sentence Prediction} (NSP) \parencite{devlin2019bert}. Pada MLM, sebagian token dalam input disembunyikan dan model diminta memprediksinya berdasarkan konteks kiri dan kanan, sehingga BERT menangkap konteks lebih kaya dibandingkan model bahasa searah \parencite{devlin2019bert}. BERT tersedia dalam beberapa ukuran, seperti BERT-base dengan 110 juta parameter dan BERT-large dengan 340 juta parameter \parencite{devlin2019bert}.
+
+Mekanisme inti Transformer adalah \textit{scaled dot-product attention}, yang menghitung bobot perhatian berdasarkan hubungan antara \textit{query} ($Q$), \textit{key} ($K$), dan \textit{value} ($V$) \parencite{vaswani2017attention}:
+
+\begin{equation}
+  \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+  \label{eq:attention}
+\end{equation}
+
+\noindent dengan $d_k$ adalah dimensi \textit{key}. Karena mekanisme \textit{attention} tidak memiliki urutan bawaan, Transformer menambahkan \textit{positional encoding} untuk mempertahankan informasi urutan \parencite{vaswani2017attention}. \textit{Multi-head attention} memperluas \textit{attention} tunggal dengan menjalankan $h$ \textit{attention} secara paralel:
+
+\begin{equation}
+  \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O
+  \label{eq:multihead}
+\end{equation}
+
+\noindent dengan $\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$, di mana $W_i^Q$, $W_i^K$, dan $W_i^V$ adalah matriks proyeksi untuk \textit{head} ke-$i$ dan $W^O$ adalah matriks proyeksi keluaran \parencite{vaswani2017attention}. Lapisan \textit{feed-forward} dan \textit{layer normalization} melengkapi blok \textit{encoder} \parencite{devlin2019bert}.
+
+Objektif pelatihan MLM dirumuskan sebagai berikut:
+
+\begin{equation}
+  \mathcal{L}_{\text{MLM}} = -\sum_{i \in \mathcal{M}} \log P(w_i \mid \mathbf{w}_{\setminus \mathcal{M}})
+  \label{eq:mlm}
+\end{equation}
+
+\noindent dengan $\mathcal{M}$ adalah himpunan indeks token yang disembunyikan, $w_i$ adalah token target, dan $\mathbf{w}_{\setminus \mathcal{M}}$ adalah konteks token yang tersisa \parencite{devlin2019bert}. Ukuran parameter yang besar membuat BERT sulit dijalankan pada perangkat dengan sumber daya terbatas, sehingga kuantisasi menjadi teknik kompresi yang relevan.
+
+\subsection{IndoBERT}
+
+IndoBERT merupakan adaptasi BERT untuk bahasa Indonesia yang dilatih pada korpus bahasa Indonesia berskala besar \parencite{wilie2020indonlu}. \textcite{wilie2020indonlu} mengembangkannya dengan korpus Indo4B yang terdiri dari sekitar empat miliar kata, mencakup teks formal dan kolokial dari berbagai sumber seperti media sosial, blog, berita, dan situs web. IndoBERT memiliki arsitektur yang mirip dengan BERT, tetapi kosakata dan representasinya disesuaikan dengan karakteristik bahasa Indonesia \parencite{maharani2023domain}. Penelitian ini menggunakan \textit{checkpoint} \textit{indobenchmark/indobert-base-p1}, yaitu varian \textit{base} dengan 124,5 juta parameter, 12 lapisan, 12 \textit{head}, dan \textit{hidden size} 768 \parencite{wilie2020indonlu, maharani2023domain}.
+
+Meskipun performanya baik, ukuran parameter IndoBERT yang besar memerlukan kompresi agar lebih efisien \parencite{abdurrahman2023implementing}. Penelitian terdahulu pada IndoBERT menunjukkan bahwa kuantisasi INT8 pada bobot menghasilkan degradasi performa yang minimal, kuantisasi 4-bit pada bobot masih mempertahankan performa pada tugas klasifikasi tetapi lebih merugikan tugas \textit{sequence labeling}, dan kuantisasi aktivasi 4-bit menyebabkan penurunan yang sangat besar \parencite{abdurrahman2023implementing}. Angka-angka rinci studi tersebut disajikan pada Subbab 2.8.
+
+\section{Kuantisasi Model}
+
+Kuantisasi adalah teknik untuk melakukan komputasi dan menyimpan tensor pada presisi bit yang lebih rendah \parencite{abdurrahman2023implementing}. Secara matematis, kuantisasi merupakan pemetaan nilai riil kontinu ke himpunan nilai diskret berhingga, dengan input di luar rentang yang dipilih dipotong (\textit{clipped}) agar berada dalam batas rentang tersebut \parencite{gholami2021survey}. Model terkuantisasi dapat menjalankan sebagian atau seluruh operasinya menggunakan presisi rendah \parencite{wu2023understanding}. Dengan pendekatan ini, kebutuhan memori dan komputasi dapat dikurangi, tetapi besarnya degradasi performa bergantung pada presisi dan cakupan kuantisasi \parencite{gholami2021survey}.
+
+Presisi yang umum digunakan dalam kuantisasi adalah FP32, FP16, INT8, dan INT4. Notasi W$x$A$y$ menunjukkan bobot $x$-bit dan aktivasi $y$-bit; W8A8 berarti bobot dan aktivasi 8-bit, sedangkan W4A4 berarti keduanya 4-bit \parencite{wu2023understanding}. Dalam penelitian ini, W4A16 menunjukkan bobot 4-bit dengan aktivasi 16-bit yang tidak dikuantisasi (skenario \textit{weight-only}), dan W4A8 menunjukkan bobot 4-bit dengan aktivasi 8-bit. Kuantisasi dapat diterapkan pada bobot saja (\textit{weight-only}) atau pada bobot dan aktivasi sekaligus (\textit{weight-activation}) \parencite{wu2023understanding}. Kuantisasi bobot dan aktivasi memberikan penghematan lebih besar, tetapi memerlukan kalibrasi yang lebih cermat untuk menghindari degradasi performa \parencite{gholami2021survey}. Relatif terhadap model FP32, model berpresisi 16-bit berukuran sekitar 50\% dan model 8-bit sekitar 25\% \parencite{abdurrahman2023implementing}.
+
+Kuantisasi simetris untuk bilangan bulat $b$-bit dengan pendekatan pembagi didefinisikan sebagai berikut:
+
+\begin{equation}
+  x_q = \text{clip}\left(\text{round}\left(\frac{x}{s}\right), -2^{b-1}, 2^{b-1}-1\right)
+  \label{eq:kuantisasi}
+\end{equation}
+
+\noindent dengan faktor skala:
+
+\begin{equation}
+  s = \frac{\alpha}{2^{b-1}-1}
+  \label{eq:skala}
+\end{equation}
+
+\noindent Pada Persamaan~\eqref{eq:kuantisasi} dan \eqref{eq:skala}, $x$ adalah nilai riil input, $x_q$ adalah nilai terkuantisasi, $b$ adalah jumlah bit representasi, dan $\alpha$ adalah nilai absolut maksimum dari rentang yang dipilih untuk kuantisasi \parencite{gholami2021survey}. Karena skema ini simetris terhadap nol, \textit{zero point} bernilai nol. Operasi \textit{clip} memastikan nilai berada dalam rentang bilangan bulat bertanda. Dekuantisasi dilakukan dengan mengalikan kembali nilai terkuantisasi dengan faktor skala, yaitu $\hat{x} = x_q \cdot s$ \parencite{gholami2021survey}.
+
+\section{Post-Training Quantization}
+
+\textit{Post-Training Quantization} (PTQ) adalah proses di mana skala dan \textit{zero point} untuk setiap tensor dalam model \textit{neural network} ditentukan terlebih dahulu dengan menjalankan model untuk mendapatkan statistik setiap lapisan \parencite{abdurrahman2023implementing}. PTQ tidak memerlukan \textit{retraining}, sehingga lebih praktis untuk \textit{deployment} model yang sudah dilatih \parencite{gholami2021survey}. Data kalibrasi diperlukan ketika aktivasi dikuantisasi, karena data tersebut digunakan untuk mengestimasi statistik aktivasi per lapisan \parencite{williams2024impact}. \textcite{williams2024impact} menunjukkan bahwa pemilihan data kalibrasi memengaruhi kualitas kuantisasi pada model bahasa, sedangkan \textcite{hubara2021accurate} menemukan bahwa PTQ dengan set kalibrasi kecil masih dapat mencapai akurasi kompetitif pada model \textit{vision}.
+
+Penelitian ini menggunakan skema kuantisasi simetris dengan bobot dikuantisasi per-\textit{channel} berbasis \textit{absmax}. Faktor skala per-\textit{channel} dirumuskan sebagai berikut:
+
+\begin{equation}
+  s_j = \frac{\max(|W_j|)}{2^{b-1}-1}
+  \label{eq:perchannel}
+\end{equation}
+
+\noindent dengan $W_j$ adalah bobot pada \textit{channel} ke-$j$ dan $s_j$ adalah faktor skala untuk \textit{channel} tersebut \parencite{gholami2021survey}. Bobot hasil rekonstruksi diperoleh dengan:
+
+\begin{equation}
+  \hat{W}_j = s_j \cdot \text{round}\left(\frac{W_j}{s_j}\right)
+  \label{eq:dekuantisasi}
+\end{equation}
+
+\noindent dengan $\hat{W}_j$ adalah bobot hasil dekuantisasi \parencite{gholami2021survey}. Persamaan~\eqref{eq:dekuantisasi} menunjukkan bahwa bobot asli didekati kembali dari representasi bilangan bulat dengan mengalikan faktor skala. Perlakuan kuantisasi pada setiap kondisi percobaan, termasuk kondisi yang tidak mengkuantisasi aktivasi, dijelaskan pada Bab III.
+
+Degradasi performa pada PTQ bergantung pada cakupan kuantisasi. \textcite{abdurrahman2023implementing} melaporkan bahwa kuantisasi aktivasi 4-bit jauh lebih merusak performa daripada kuantisasi bobot 4-bit pada IndoBERT, yang menunjukkan bahwa aktivasi lebih sensitif terhadap kuantisasi agresif dibandingkan bobot. \textcite{sanjaya2026quantization} juga melaporkan bahwa PTQ \textit{weight-only} INT4 hampir tidak menurunkan metrik klasifikasi, tetapi memengaruhi stabilitas atribusi dan menyebabkan sebagian prediksi berubah (lihat Subbab 2.2).
+
+Berbeda dengan PTQ, \textit{Quantization-Aware Training} (QAT) memasukkan operasi kuantisasi ke dalam model sebelum pelatihan atau \textit{fine-tuning} \parencite{wu2023understanding}. QAT memungkinkan model beradaptasi dengan bobot dan aktivasi terkuantisasi sehingga degradasi performa dapat ditekan \parencite{wu2023understanding}. Q8BERT melaporkan bahwa kuantisasi 8-bit dengan QAT menghasilkan degradasi akurasi sekitar 1\% pada beberapa tugas GLUE \parencite{zafrir2019q8bert}. \textcite{wu2023understanding} melaporkan bahwa QAT dengan \textit{knowledge distillation} pada BERT-base tidak menyebabkan degradasi akurasi pada tugas klasifikasi GLUE, sedangkan pada model \textit{decoder-only} seperti GPT2 terjadi penurunan \textit{perplexity} yang signifikan. Namun, QAT memerlukan biaya komputasi lebih tinggi karena memerlukan \textit{retraining} tambahan. \textcite{sanjaya2026quantization} menemukan bahwa QAT mengubah atribusi model bahkan pada presisi penuh, dengan korelasi Spearman turun menjadi 0,788 sebelum kuantisasi diterapkan, yang menunjukkan bahwa \textit{fine-tuning} tambahan itu sendiri mengubah perilaku internal model. Penelitian ini memilih PTQ untuk mengevaluasi kelayakan kompresi tanpa \textit{retraining}.
+
+\section{Dataset Finansial Bahasa Indonesia}
+
+\subsection{IndoFinSent}
+
+IndoFinSent merupakan dataset analisis sentimen finansial bahasa Indonesia asli yang dibuat dengan \textit{scraping} judul artikel berita keuangan dari berbagai sumber seperti Liputan6, CNBC, Detik, Sindo, Jawapos, dan Metrotv News \parencite{maharani2023domain}. Setiap kalimat dilabeli secara manual oleh dua anotator dan diperiksa silang \parencite{maharani2023domain}. Dataset ini berisi 2.274 entri dengan distribusi label positif 52,77\%, netral 26,25\%, dan negatif 20,98\% \parencite{maharani2023domain}. Split resmi dataset terdiri dari 1.591 data latih, 227 data validasi, dan 456 data uji \parencite{maharani2023domain}. Karena dibuat dari teks asli bahasa Indonesia, dataset ini mempertahankan nuansa bahasa, referensi budaya, dan ekspresi idiomatik yang spesifik \parencite{maharani2023domain}, dan pelabelan manual oleh dua anotator umumnya memberi kualitas label yang lebih baik daripada pelabelan otomatis.
+
+Satu keterbatasan perlu dicatat, yaitu IndoFinSent berisi judul berita yang merujuk pada satu institusi keuangan tertentu (contohnya BRI), sehingga generalisasi hasil ke institusi lain atau domain finansial yang lebih luas harus dilakukan dengan hati-hati \parencite{maharani2023domain}. Selain itu, distribusi kelas yang didominasi positif membuat kelas minoritas (negatif 20,98\%) berisiko kurang terwakili dalam pelatihan. Karena itu, Macro F1-Score menjadi metrik utama karena memberikan bobot setara pada setiap kelas \parencite{hinojosalee2024performance}, dilengkapi evaluasi per kelas untuk melihat apakah kuantisasi lebih merugikan kelas minoritas.
+
+\subsection{Indonesian Financial PhraseBank}
+
+Indonesian Financial PhraseBank merupakan versi terjemahan Financial PhraseBank ke dalam bahasa Indonesia menggunakan Google Translate \parencite{maharani2023domain}. Dataset ini memakai subset ``\textit{all agree}'' yang terdiri dari 2.264 kalimat keuangan beserta label sentimennya \parencite{malo2014good}. Sebagian besar kalimat berlabel netral (61,44\%), diikuti positif (25,18\%) dan negatif (13,38\%) \parencite{maharani2023domain}. Split resmi dataset terdiri dari 1.629 data latih, 182 data validasi, dan 453 data uji \parencite{maharani2023domain}.
+
+Penerjemahan memungkinkan perbandingan dengan penelitian terdahulu yang menggunakan Financial PhraseBank versi Inggris \parencite{araci2019finbert}. Terjemahan berpotensi menimbulkan pergeseran makna, tetapi subset ``\textit{all agree}'' memastikan hanya kalimat dengan kesepakatan anotator yang tinggi yang disertakan \parencite{malo2014good}. Dominasi kelas netral membawa konsekuensi bagi pengukuran \textit{score drift}: sebagian besar nilai $S = P(\text{Positif}) - P(\text{Negatif})$ diperkirakan mendekati 0, sehingga MAE \textit{drift} secara keseluruhan berpotensi tampak kecil. Karena itu, \textit{score drift} perlu dilaporkan per kelas prediksi dan dilengkapi KL \textit{divergence} pada distribusi tiga kelas (Subbab 2.7.2).
+
+\section{Metrik Evaluasi}
+
+\subsection{Klasifikasi Diskret}
+
+\textit{Macro F1-Score} dihitung dengan menghitung F1-score untuk setiap kelas secara terpisah, kemudian mengambil rata-ratanya \parencite{hinojosalee2024performance}. Metrik ini memberikan bobot setara pada setiap kelas sehingga lebih peka terhadap ketidakseimbangan kelas dibandingkan \textit{Micro F1-Score} \parencite{hinojosalee2024performance}. Rumusnya adalah sebagai berikut:
+
+\begin{equation}
+  F1_{\text{macro}} = \frac{1}{N} \sum_{i=1}^{N} F1_i
+  \label{eq:macrof1}
+\end{equation}
+
+\noindent dengan $N$ adalah jumlah kelas dan $F1_i$ adalah F1-score untuk kelas ke-$i$ \parencite{hinojosalee2024performance}.
+
+Akurasi untuk klasifikasi tiga kelas dihitung sebagai proporsi prediksi yang benar terhadap seluruh data uji:
+
+\begin{equation}
+  \text{Akurasi} = \frac{\sum_{i=1}^{N} \text{TP}_i}{N_{\text{total}}}
+  \label{eq:akurasi}
+\end{equation}
+
+\noindent dengan $\text{TP}_i$ adalah jumlah prediksi benar untuk kelas ke-$i$ (elemen diagonal matriks konfusi) dan $N_{\text{total}}$ adalah jumlah total sampel uji. Akurasi mudah dipahami tetapi dapat menyesatkan pada data yang tidak seimbang antar-kelas \parencite{sokolova2009systematic}. Contohnya adalah studi \textcite{bimasena2026benchmarking} yang melaporkan akurasi 0,94 bersama Macro F1 hanya 0,71 pada data berita keuangan. \textit{Precision} dan \textit{recall} juga dilaporkan per kelas untuk melihat apakah kuantisasi lebih merugikan kelas minoritas.
+
+\subsection{Definisi Score Drift}
+
+\textit{Score drift} didefinisikan sebagai selisih antara nilai indikator sentimen kontinu $S$ pada model terkuantisasi dan model FP32. Secara per sampel, \textit{drift} dirumuskan sebagai:
+
+\begin{equation}
+  d_i = S_{q,i} - S_{\text{FP32},i}
+  \label{eq:drift}
+\end{equation}
+
+\noindent dengan $q$ menunjukkan presisi terkuantisasi dan tanda negatif menunjukkan bahwa model terkuantisasi lebih pesimis. Urutan pengurangan tidak memengaruhi MAE tetapi memengaruhi tanda bias, sehingga penelitian ini konsisten menggunakan $S_{q} - S_{\text{FP32}}$. \textit{Baseline} adalah model FP32 hasil \textit{fine-tuning} yang sama, pada \textit{test set} dan tokenisasi yang sama.
+
+Secara agregat, \textit{score drift} diukur menggunakan \textit{Mean Absolute Error} (MAE), korelasi Pearson, dan korelasi Spearman. MAE dirumuskan sebagai:
+
+\begin{equation}
+  \text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |d_i|
+  \label{eq:mae}
+\end{equation}
+
+Korelasi Pearson antara nilai $S$ sebelum dan sesudah kuantisasi dirumuskan sebagai:
+
+\begin{equation}
+  r = \frac{\sum_{i=1}^{n} (S_{\text{FP32},i} - \bar{S}_{\text{FP32}})(S_{q,i} - \bar{S}_{q})}{\sqrt{\sum_{i=1}^{n} (S_{\text{FP32},i} - \bar{S}_{\text{FP32}})^2} \sqrt{\sum_{i=1}^{n} (S_{q,i} - \bar{S}_{q})^2}}
+  \label{eq:pearson}
+\end{equation}
+
+Korelasi Spearman dihitung dengan menerapkan korelasi Pearson pada peringkat nilai $S$ alih-alih nilai aslinya, sehingga mengukur apakah urutan peringkat sampel dipertahankan setelah kuantisasi.
+
+\textit{Label flip rate} didefinisikan sebagai proporsi sampel yang label prediksinya berubah antara model FP32 dan model terkuantisasi:
+
+\begin{equation}
+  \text{Flip Rate} = \frac{1}{n} \sum_{i=1}^{n} \mathbb{1}[\hat{y}_{\text{FP32},i} \neq \hat{y}_{q,i}]
+  \label{eq:fliprate}
+\end{equation}
+
+\noindent dengan $\hat{y}_{\text{FP32},i}$ adalah label prediksi model FP32 untuk sampel ke-$i$, $\hat{y}_{q,i}$ adalah label prediksi model terkuantisasi, dan $\mathbb{1}[\cdot]$ adalah fungsi indikator.
+
+Selain itu, KL \textit{divergence} pada distribusi tiga kelas (positif, netral, negatif) digunakan untuk mengukur seberapa jauh distribusi probabilitas keluaran bergeser:
+
+\begin{equation}
+  D_{\text{KL}}(P_{\text{FP32}} \,\|\, P_q) = \sum_{c=1}^{3} \tilde{P}_{\text{FP32}}(c) \ln \frac{\tilde{P}_{\text{FP32}}(c)}{\tilde{P}_q(c)}
+  \label{eq:kl}
+\end{equation}
+
+\noindent dengan $\tilde{P}(c) = (P(c) + \varepsilon)/(1 + 3\varepsilon)$ adalah probabilitas yang dihaluskan dengan $\varepsilon = 10^{-8}$ agar tidak terjadi pembagian dengan nol, dan logaritma yang digunakan adalah logaritma natural. Prosedur pengukuran, termasuk pengujian statistik dan analisis hubungan \textit{drift} dengan margin keputusan model, dijelaskan pada Bab III.
+
+\subsection{Efisiensi Komputasi}
+
+Ukuran model diukur dalam megabyte (MB) dan dibandingkan antara presisi FP32, INT8, dan INT4. Estimasi teoretis dari jumlah bit dapat berbeda dari ukuran aktual berkas. \textcite{sanjaya2026quantization} melaporkan bahwa PTQ-INT8 mengurangi ukuran model IndoBERT dari 475 MB menjadi 230 MB, atau sekitar 52\%, sedangkan PTQ-INT4 \textit{weight-only} tetap berukuran 230 MB karena disimpan sebagai INT8 dengan metadata tambahan.
+
+Latensi diukur dalam milidetik per sampel (ms/sampel) dan \textit{throughput} dalam sampel per detik. \textcite{sanjaya2026quantization} melaporkan bahwa PTQ-INT8 mengurangi latensi dari 25,1 ms menjadi 9,4 ms pada CPU, atau sekitar 2,7$\times$ lebih cepat, sedangkan PTQ-INT4 \textit{weight-only} justru lebih lambat (32,7 ms) karena dekuantisasi ke FP32 sebelum komputasi. \textcite{wu2023understanding} melaporkan bahwa \textit{pipeline} INT4 dengan QAT dan \textit{knowledge distillation} mencapai 8,5$\times$ lebih cepat untuk skenario berorientasi latensi dan 3$\times$ lebih cepat untuk \textit{throughput} dibandingkan FP16 pada GPU A6000. Namun, percepatan INT4 memerlukan dukungan \textit{kernel hardware} tertentu dan tidak terwujud pada \textit{weight-only quantization} tanpa dukungan tersebut \parencite{wu2023understanding}.
+
+Karena simulasi kuantisasi (\textit{fake quantization}) tidak menghasilkan percepatan, penelitian ini melaporkan ukuran model dan estimasi \textit{bit-operations} (BOPs) sebagai proksi efisiensi utama, serta latensi sebagai metrik pelengkap dengan catatan bahwa hasilnya bergantung pada dukungan \textit{hardware} dan \textit{kernel}. Ukuran model dilaporkan dalam dua bentuk, yaitu ukuran teoretis berdasarkan jumlah bit dan ukuran aktual berkas, karena penyimpanan INT4 dapat dikemas sebagai INT8 \parencite{sanjaya2026quantization}.
+
+\section{Penelitian Relevan}
+
+Penelitian terdahulu yang relevan dan terbit dalam lima tahun terakhir dirangkum pada Tabel~\ref{tab:penelitian-terdahulu}. Studi-studi tersebut dapat dikelompokkan ke dalam tiga jalur yang saling melengkapi, yaitu sentimen finansial berbahasa Indonesia, kuantisasi model bahasa, dan indikator sentimen kontinu.
+
+Pada jalur sentimen finansial Indonesia, \textcite{maharani2023domain} melakukan \textit{post-training} IndoBERT pada korpus finansial Indonesia sebesar 647.586 kata. Pada Financial PhraseBank terjemahan, model \textit{base} mencapai F1 0,91 pada \textit{baseline} dan 0,94 setelah \textit{post-training} dengan 100\% data latih. Pada IndoFinSent, model \textit{base} yang di-\textit{post-training} mencapai F1 0,79--0,81, sedangkan model \textit{large} mencapai F1 0,78--0,79 \parencite{maharani2023domain}. \textcite{tanjaya2025optimizing} melakukan \textit{fine-tuning} IndoBERTweet pada 3.288 tweet saham berbahasa Indonesia dan melaporkan F1 makro 0,8177 pada data uji serta 0,8106 pada data uji dengan \textit{noise} sintetis, dengan indikasi \textit{overfitting} yang diakui penulisnya. \textcite{bimasena2026benchmarking} membandingkan IndoBERT dan Multilingual BERT untuk klasifikasi sentimen berita keuangan Indonesia, dengan IndoBERT mencapai akurasi 0,94 dan Macro F1 0,71. Data \textcite{bimasena2026benchmarking} menggunakan \textit{pseudo-label} yang dihasilkan mesin, bukan \textit{ground truth} manusia. Ketiga studi ini melaporkan performa IndoBERT untuk sentimen finansial Indonesia, tetapi semuanya memakai metrik klasifikasi diskret dan tidak mengevaluasi dampak kompresi model terhadap keluaran probabilitas.
+
+Pada jalur kuantisasi, \textcite{sanjaya2026quantization} mengevaluasi PTQ dan QAT pada IndoBERT untuk klasifikasi sentimen tiga kelas SmSA pada presisi FP16, INT8, dan INT4. Akurasi hampir tidak berubah (92,9--93,2\%), sedangkan stabilitas atribusi bergantung pada jalur kompresi: PTQ-INT8 mempertahankan korelasi Spearman 0,967 terhadap FP32, sementara varian QAT turun hingga sekitar 0,55 setelah ekspor ONNX. Studi tersebut memakai data umum (SmSA), INT4 hanya pada bobot, dan metrik berbasis atribusi. Studi tersebut tidak mendefinisikan indikator sentimen kontinu dari probabilitas kelas maupun mengukur pergeserannya per sampel akibat kuantisasi, dan tidak dilakukan pada domain finansial. \textcite{wu2023understanding} meneliti kuantisasi INT4 pada bobot dan aktivasi (W4A4) pada model Transformer dengan QAT dan \textit{knowledge distillation}. Mereka menemukan bahwa W4A4 tidak menyebabkan degradasi akurasi pada model \textit{encoder-only} seperti BERT, tetapi menyebabkan penurunan besar pada model \textit{decoder-only}. \textit{Pipeline} INT4 mereka dilaporkan 8,5$\times$ lebih cepat untuk skenario berorientasi latensi dan 3$\times$ lebih cepat untuk \textit{throughput} dibandingkan FP16. \textcite{williams2024impact} menunjukkan bahwa pemilihan data kalibrasi memengaruhi performa \textit{downstream} model terkuantisasi, dengan tingkat sensitivitas yang berbeda antar metode PTQ dan \textit{pruning}. \textcite{abdurrahman2023implementing} meneliti kuantisasi pada IndoBERT untuk tujuh tugas \textit{downstream} IndoNLU. PTQ INT8 pada bobot mencapai degradasi minimal (rata-rata F1 77,04 terhadap 77,35). PTQ 4-bit pada bobot masih mempertahankan performa pada tugas klasifikasi dengan penurunan F1 sekitar 1 poin, tetapi tugas \textit{sequence labeling} mengalami degradasi lebih besar (FACQA 54,16 menjadi 43,90; NERGRIT 70,92 menjadi 60,31). PTQ 4-bit pada aktivasi menyebabkan penurunan besar, dengan rata-rata F1 turun dari 76,98 pada W16A32 menjadi 17,71 pada W16A4, sedangkan QAT pada aktivasi 4-bit masih menghasilkan rata-rata F1 sebesar 47,29. Pada tugas sentimen SmSA, PTQ W4A32 mencapai F1 85,20, lebih tinggi daripada QAT W4A32 yang mencapai 79,21. Hasil ini menjadi salah satu alasan penelitian ini memilih PTQ, meskipun berasal dari satu dataset dan satu konfigurasi sehingga perlu diuji ulang pada domain finansial.
+
+Pada jalur indikator sentimen kontinu, \textcite{barter2026bondbert} menggunakan NDI pada data obligasi pemerintah Inggris untuk mengukur sentimen yang selaras dengan pergerakan harga obligasi. \textcite{kim2023forecasting} menggunakan skor sentimen kontinu dari probabilitas label \textit{argmax} untuk memprediksi indeks S\&P 500 dan melaporkan bahwa penambahan skor sentimen menurunkan MSE dari 0,0026 menjadi 0,0016 serta menaikkan R$^2$ dari 0,8339 menjadi 0,8950. \textcite{mishev2020evaluation} menggunakan formula polaritas berbasis leksikon pada berita keuangan berbahasa Inggris. Ketiga studi ini menunjukkan kegunaan indikator sentimen kontinu, tetapi tidak ada yang mengukur pergeseran nilai tersebut akibat kuantisasi, dan tidak ada yang mencakup bahasa Indonesia.
+
+{\setlength{\tabcolsep}{3pt}
+\captionsetup[longtable]{font=normalsize}
+\begingroup\scriptsize
+\begin{longtable}{|c|>{\raggedright\arraybackslash}p{1.5cm}|>{\raggedright\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{2.1cm}|>{\raggedright\arraybackslash}p{1.9cm}|>{\raggedright\arraybackslash}p{1.5cm}|>{\raggedright\arraybackslash}p{3.0cm}|}
+  \caption{Penelitian Terdahulu}
+  \label{tab:penelitian-terdahulu} \\
+  \hline
+  \textbf{No} & \textbf{Referensi} & \textbf{Model} & \textbf{Dataset \& Domain} & \textbf{Teknik} & \textbf{Metrik} & \textbf{Hasil Utama} \\ \hline
+  \endfirsthead
+  \multicolumn{7}{c}{\tablename~\thetable{} (lanjutan)} \\ \hline
+  \textbf{No} & \textbf{Referensi} & \textbf{Model} & \textbf{Dataset \& Domain} & \textbf{Teknik} & \textbf{Metrik} & \textbf{Hasil Utama} \\ \hline
+  \endhead
+  \hline
+  \endlastfoot
+  1 & Maharani dkk. (2023) & IndoBERT-base (124,5M), IndoBERT-large (335,2M) & Korpus finansial Indonesia (647.586 kata), IndoFinSent (2.274 entri), Financial PhraseBank ID (2.264 entri) & \textit{Post-training} MLM pada korpus finansial Indonesia & F1 & PhraseBank ID: F1 0,91 $\rightarrow$ 0,94 (\textit{post-trained}, 100\% data); IndoFinSent: F1 0,79--0,81 (\textit{base}), 0,78--0,79 (\textit{large}) \\ \hline
+  2 & Abdur\-rahman dkk. (2023) & IndoBERT & IndoNLU (7 tugas), termasuk SmSA & PTQ dan QAT; 4-bit dan 8-bit pada bobot dan aktivasi & F1, FLOPs, estimasi ukuran model & PTQ INT8 pada bobot degradasi minimal (77,04 vs 77,35); PTQ INT4 pada bobot turun $\sim$1 poin pada klasifikasi, tetapi \textit{sequence labeling} turun besar (FACQA 54,16 $\rightarrow$ 43,90); PTQ aktivasi 4-bit \textit{collapse} (17,71); QAT pada bobot efektif; QAT aktivasi 4-bit masih 47,29 \\ \hline
+  3 & Wu dkk. (2023) & BERT-base (\textit{encoder}), GPT2 (\textit{decoder}) & Inggris, GLUE, Wikitext & QAT + KD; INT4 W4A4 & Akurasi, \textit{perplexity}, latensi, \textit{throughput} & QAT W4A4 tidak mendegradasi \textit{encoder-only}; \textit{decoder-only} turun signifikan; percepatan 8,5$\times$ (latensi) dan 3$\times$ (\textit{throughput}) terhadap FP16 pada GPU A6000 \\ \hline
+  4 & Williams \& Aletras (2024) & LLaMA, Vicuna, OPT (7B--33B) & Lima sumber data kalibrasi (C4, CNN-DM, RedPajama, RefinedWeb, Wikipedia) & PTQ (GPTQ, SpQR) dan \textit{pruning} (SparseGPT, Wanda) & Akurasi \textit{zero-shot}, \textit{perplexity} & Pemilihan data kalibrasi memengaruhi performa \textit{downstream}; SpQR paling tidak sensitif, SparseGPT paling sensitif \\ \hline
+  5 & Tanjaya dkk. (2025) & Indo\-BERT\-weet & 3.288 tweet saham Indonesia (ID-SMSA) & \textit{Fine-tuning} dengan variasi \textit{preprocessing} dan \textit{hyperparameter} & Macro F1 & F1 makro 0,8177 pada data uji; 0,8106 pada data uji ber-\textit{noise}; indikasi \textit{overfitting} \\ \hline
+  6 & Sanjaya dkk. (2026) & IndoBERT-base-p2, XLM-R, mBERT & Indonesia, SmSA, NusaX-senti & PTQ dan QAT; FP16/\allowbreak INT8/\allowbreak INT4 (INT4 hanya bobot) & Akurasi, F1, ECE, \textit{agreement}, korelasi atribusi & Akurasi stabil (92,9--93,2\%); PTQ-INT8 $\rho$ = 0,967; PTQ-INT4 $\rho$ = 0,850; QAT turun hingga $\rho \approx$ 0,55; PTQ-INT8 230 MB dan 9,4 ms; PTQ-INT4 32,7 ms \\ \hline
+  7 & Barter dkk. (2026) & BondBERT (FinBERT di-\textit{fine-tune} pada korpus obligasi) & 30.000 artikel obligasi pemerintah Inggris (2018--2025) & \textit{Fine-tuning} dengan label GPT-4.1-nano; NDI & Korelasi dengan \textit{return} obligasi, akurasi arah, \textit{normalised} RMSE, IC, uji Diebold--Mariano & BondBERT konsisten menghasilkan korelasi positif dengan \textit{return} obligasi dan akurasi arah lebih tinggi daripada FinBERT, FinGPT, dan Instruct-FinGPT \\ \hline
+  8 & Bimasena dkk. (2026) & IndoBERT, mBERT & 3.366 artikel berita finansial Indonesia (\textit{pseudo-label}) & \textit{Fine-tuning} dengan \textit{class weighting} dan \textit{stratified splitting} & Akurasi, Macro F1 & IndoBERT: akurasi 0,94, Macro F1 0,71; mBERT: akurasi 0,93, Macro F1 0,70 \\ \hline
+  9 & \textbf{Penelitian ini} & \textbf{IndoBERT-base-p1} & \textbf{IndoFinSent (2.274 entri), Financial PhraseBank ID (2.264 entri)} & \textbf{PTQ: FP32, INT8-W8A8, INT4-W4A16, INT4-W4A8, INT4-W4A4} & \textbf{Macro F1, akurasi, \textit{score drift} (MAE, Pearson, Spearman, \textit{label flip rate}, KL \textit{divergence}), ukuran model, BOPs, latensi} & \textbf{Dilaporkan pada Bab IV} \\ \hline
+\end{longtable}
+\endgroup
+}
+
+Berdasarkan Tabel~\ref{tab:penelitian-terdahulu}, dapat diidentifikasi empat celah utama. Pertama, studi pada jalur sentimen finansial Indonesia \parencite{maharani2023domain, tanjaya2025optimizing, bimasena2026benchmarking} belum mengevaluasi dampak kompresi model terhadap keluaran probabilitas. Kedua, studi pada jalur kuantisasi \parencite{abdurrahman2023implementing, wu2023understanding, williams2024impact, sanjaya2026quantization} belum mencakup domain finansial Indonesia, dan hanya \textcite{sanjaya2026quantization} yang mengevaluasi kuantisasi pada IndoBERT untuk tugas sentimen meskipun pada data umum (SmSA) dan dengan kuantisasi INT4 hanya pada bobot. Ketiga, studi pada jalur indikator sentimen kontinu \parencite{mishev2020evaluation, kim2023forecasting, barter2026bondbert} belum mengukur pergeseran indikator tersebut akibat kuantisasi. Keempat, tidak ada studi yang secara bersamaan mencakup keempat dimensi: PTQ, sentimen, domain finansial, dan bahasa Indonesia. Penelitian ini mengisi celah tersebut dengan mengevaluasi PTQ pada IndoBERT menggunakan dua dataset finansial Indonesia, yaitu IndoFinSent dan Indonesian Financial PhraseBank, pada lima kondisi: FP32, INT8-W8A8, INT4-W4A16, INT4-W4A8, dan INT4-W4A4.
