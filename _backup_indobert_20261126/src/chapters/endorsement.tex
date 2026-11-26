@@ -1,0 +1,55 @@
+%--------------------------------------------------------------------%
+%
+% Lembar Persetujuan dan Pengesahan (Pedoman UM Lampiran 5a)
+%
+% Nama dewan penguji dan pejabat penanda tangan diambil dari
+% config/informations.tex.
+%
+%--------------------------------------------------------------------%
+
+\clearpage
+
+\begin{center}
+    \bfseries LEMBAR PERSETUJUAN DAN PENGESAHAN SKRIPSI
+\end{center}
+
+\phantomsection
+\addcontentsline{toc}{chapter}{LEMBAR PERSETUJUAN DAN PENGESAHAN SKRIPSI}
+
+\vspace{\baselineskip}
+
+\noindent Skripsi oleh \MakeUppercase{\penulis} ini telah dipertahankan di depan dewan penguji pada tanggal \tanggalSidang.
+
+\vspace{\baselineskip}
+
+\noindent Dewan Penguji
+
+\vspace{\baselineskip}
+
+% Satu baris penguji: nama (atau garis kosong) lalu NIP (atau garis kosong).
+\newcommand*{\pengujiBaris}[2]{%
+  \ifx#1\empty\underline{\strut\hspace{6.5cm}}\else#1\fi\\[0.15cm]
+  \ifx#2\empty NIP~\underline{\strut\hspace{4.5cm}}\else#2\fi}
+
+\noindent
+\pengujiBaris{\pengujiSatu}{\nipPengujiSatu}
+
+\vspace{0.8cm}
+\noindent
+\pengujiBaris{\pengujiDua}{\nipPengujiDua}
+
+\vspace{0.8cm}
+\noindent
+\pengujiBaris{\pengujiTiga}{\nipPengujiTiga}
+
+\vspace{2\baselineskip}
+
+\noindent
+\begin{tabular}{@{}p{0.48\textwidth}p{0.48\textwidth}@{}}
+Mengesahkan, & Mengetahui, \\
+Dekan \fakultas, & Ketua Departemen \departemen, \\[2cm]
+\dekan & \ketuaDepartemen \\
+\nipDekan & \nipKetuaDepartemen
+\end{tabular}
+
+\clearpage

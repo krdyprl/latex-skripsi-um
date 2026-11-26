@@ -1,66 +1,303 @@
 %--------------------------------------------------------------------%
 %
-% Bab III — Analisis dan Perancangan
-%
-% @author Petra Novandi
-%
-%--------------------------------------------------------------------%
-%
-% Berisi analisis masalah, solusi umum, dan rancangan solusi.
-% Ganti teks placeholder dengan isi sebenarnya.
+% Bab III — Metode Penelitian
 %
 %--------------------------------------------------------------------%
 
-\chapter{Analisis dan Perancangan}
+\chapter{Metode Penelitian}
 
-Bab ini menjelaskan bagaimana persoalan yang dirumuskan di Bab I
-dianalisis dan dirancang solusinya. Pembaca seharusnya memahami
-pendekatan yang diambil serta alasan pemilihan solusi sebelum
-membaca bab evaluasi.
+\section{Jenis dan Alur Penelitian}
 
-\section{Analisis Masalah}
+\subsection{Jenis Penelitian Eksperimental Kuantitatif}
 
-Jelaskan persoalan tugas akhir secara rinci berdasarkan rumusan
-masalah. Uraikan kondisi yang ada, kebutuhan pengguna atau sistem,
-serta kendala yang menjadi fokus penyelesaian.
+Penelitian ini merupakan penelitian eksperimental kuantitatif. Perlakuan yang diberikan adalah kuantisasi \textit{weight-only} INT4 pada model yang telah di-\textit{fine-tune}, dengan dua granularitas sebagai variasi perlakuan, yaitu \textit{per-tensor} dan \textit{per-channel}. Kondisi pengujian dikendalikan agar identik, yaitu data uji, model dasar, lingkungan komputasi, dan prosedur evaluasi yang sama untuk seluruh konfigurasi.
 
-\blindtext%
+Pendekatan eksperimental dipilih karena tiga alasan. Pertama, rumusan masalah menuntut pengukuran akibat suatu perlakuan, bukan pengamatan keadaan yang sudah ada. Kedua, perlakuan dapat diberikan secara terkendali karena kuantisasi hanya mengubah presisi bobot, sedangkan arsitektur model tidak berubah. Ketiga, hasil perlakuan dapat diukur secara kuantitatif melalui metrik baku tugas \textit{extractive question answering} (Subbab 2.6).
 
-\section{Solusi Umum}
+Penelitian ini tidak termasuk penelitian pengembangan perangkat lunak. Keluaran penelitian berupa bukti empiris mengenai pengaruh kuantisasi INT4 dan granularitasnya, bukan sistem atau aplikasi baru. Kode program kuantisasi disertakan sebagai lampiran agar hasil dapat direproduksi, dan kedudukannya adalah alat penelitian.
 
-Deskripsikan solusi atau pendekatan umum yang relevan dengan
-persoalan. Bandingkan alternatif yang ada dan jelaskan mengapa
-pendekatan tertentu dipilih untuk dikembangkan lebih lanjut.
+\subsection{Alur Penelitian}
 
-\blindtext%
+Penelitian dimulai dengan studi literatur untuk menyusun rumusan masalah pada Bab I dan celah penelitian pada Subbab 2.7.2, lalu menetapkan tujuan dan batasan penelitian. Eksperimen dirancang dengan menetapkan data, model, konfigurasi kuantisasi, metrik, dan uji statistik. Data disiapkan dan model di-\textit{fine-tune} pada FP32 untuk tiga nilai \textit{seed}.
 
-\section{Rancangan Solusi}
+Model hasil \textit{fine-tuning} kemudian dijadikan \textit{baseline} dan model terkuantisasi, lalu ukurannya diukur. Ketiga konfigurasi diuji pada data uji, dianalisis secara deskriptif, dan diuji signifikansinya. Kesimpulan ditarik dan laporan disusun. Alur ini ditunjukkan pada Gambar~\ref{fig:alur-penelitian}.
 
-Uraikan rancangan solusi yang diusulkan, meliputi arsitektur,
-komponen, alur kerja, model data, antarmuka, atau aspek teknis
-lainnya sesuai topik tugas akhir. Contoh berikut menampilkan data
-dari berkas CSV di direktori \texttt{resources/}.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\textwidth,height=0.40\textheight,keepaspectratio]{"resources/Alur penelitian.png"}
+  \caption{Alur penelitian}
+  \label{fig:alur-penelitian}
+\end{figure}
 
-\begin{table}[ht]
-    \centering
-    \caption{Kebutuhan fungsional sistem}
-    \label{tab:sample-requirements}
-    \csvautotabular{resources/chapter-3-sample-requirements.csv}
+\section{Desain Eksperimen}
+
+\subsection{Gambaran Umum Desain Eksperimen}
+
+Desain eksperimen bertumpu pada satu model dasar yang sama untuk seluruh konfigurasi. Model IndoBERT-base fase 2 di-\textit{fine-tune} pada data latih dalam FP32, lalu bobot hasil \textit{fine-tuning} disalin tiga kali. Salinan pertama dikonversi ke FP16 sebagai \textit{baseline}. Salinan kedua dikuantisasi INT4 dengan granularitas \textit{per-tensor}, dan salinan ketiga dikuantisasi INT4 dengan granularitas \textit{per-channel}.
+
+Pemisahan dilakukan pada kuantisasi, bukan pada pelatihan. Dengan cara ini ketiga konfigurasi berbagi bobot awal yang identik, sehingga perbedaan hasil hanya berasal dari presisi dan granularitas bobot. Ketiga konfigurasi dievaluasi pada data uji yang sama dengan prosedur yang sama, dan alurnya ditunjukkan pada Gambar~\ref{fig:desain-eksperimen}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\textwidth,height=0.40\textheight,keepaspectratio]{"resources/desain eksperimen.png"}
+  \caption{Desain eksperimen untuk tiga konfigurasi}
+  \label{fig:desain-eksperimen}
+\end{figure}
+
+\subsection{Lingkungan Eksperimen}
+
+Seluruh eksperimen dijalankan pada lingkungan komputasi yang sama, mulai dari penyiapan data, \textit{fine-tuning}, kuantisasi, hingga pengukuran. Lingkungan tersebut dirangkum pada Tabel~\ref{tab:lingkungan}. Spesifikasi dicantumkan karena pengukuran latensi dan ukuran berkas bergantung pada perangkat keras, sistem operasi, dan versi pustaka.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Lingkungan eksperimen penelitian}
+  \label{tab:lingkungan}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.2cm}X@{}}
+    \hline
+    \textbf{Komponen} & \textbf{Spesifikasi} \\
+    \hline
+    Platform & Kaggle Notebooks \\
+    GPU & NVIDIA Tesla T4, 16 GB VRAM, satu GPU dipakai \\
+    CPU & 4 vCPU \\
+    Memori & 29 GB RAM \\
+    Penyimpanan & 20 GB, ditambah \textit{dataset} yang diunggah permanen \\
+    Batas eksekusi & 9 jam per sesi, kuota 30 jam GPU per minggu \\
+    Bahasa pemrograman & Python \\
+    Pustaka utama & PyTorch, \textit{transformers}, \textit{datasets}, NumPy \\
+    Versi pustaka & Mengikuti \textit{image} Kaggle saat eksekusi dan dicatat pada lampiran \\
+    \hline
+  \end{tabularx}
 \end{table}
 
-\begin{table}[ht]
-    \centering
-    \caption{Komponen arsitektur sistem}
-    \label{tab:sample-components}
-    \csvautotabular{resources/chapter-3-sample-components.csv}
+Dua keputusan lingkungan perlu dijelaskan. Pertama, hanya satu GPU yang dipakai walaupun platform menyediakan dua, karena model 123,9 juta parameter yang dilatih pada 64.054 baris dapat ditampung pada satu GPU 16 GB sehingga pelatihan terdistribusi tidak diperlukan. Kedua, seluruh \textit{run} dijalankan pada jenis GPU yang sama, karena latensi yang diukur pada perangkat berbeda tidak dapat dibandingkan walaupun model dan data uji identik.
+
+Kaggle dipilih karena menyediakan GPU T4 dengan kuota 30 jam per minggu dan batas sesi 9 jam. \textit{Dataset} diunggah sebagai \textit{dataset} permanen agar tidak diunduh ulang pada setiap sesi. Lokasi penelitian adalah lingkungan daring Kaggle Notebooks, sehingga penelitian tidak terikat pada satu ruang fisik.
+
+\subsection{Data Penelitian dan Analisis Data Eksploratif}
+
+Penelitian ini menggunakan \textit{dataset} SQuAD-id, yaitu terjemahan mesin SQuAD v2.0 ke bahasa Indonesia \parencite{muis2020sequence}. Karakteristik berkas mentah dirangkum pada Tabel~\ref{tab:karakteristik-dataset} di Subbab 2.3. Data bersifat sekunder dan tersedia untuk umum. Lisensi \textit{dataset} belum ditetapkan pada kartu \textit{dataset}, sehingga ketentuan penggunaan diperiksa sebelum data didistribusikan ulang.
+
+Berkas data diunduh dari sumber publik yang tercantum pada kartu \textit{dataset}, lalu diunggah ke Kaggle sebagai \textit{dataset} permanen (Subbab 3.2.2). Instrumen pengumpulan data adalah \textit{dataset} itu sendiri, tanpa kuesioner atau wawancara. Setiap baris berisi satu konteks, satu pertanyaan, teks jawaban beserta posisi awalnya, dan penanda apakah pertanyaan tersebut tidak dapat dijawab.
+
+Analisis data eksploratif dilakukan pada berkas mentah sebelum penyaringan. Pemeriksaan mencakup lima hal, yaitu keutuhan berkas dan jumlah baris tiap pembagian, jumlah artikel dan konteks unik, distribusi penanda pertanyaan tanpa jawaban, kesesuaian posisi jawaban dengan teksnya, serta panjang konteks dan pertanyaan dalam kata dan \textit{token}. Pemeriksaan posisi jawaban paling menentukan karena berkas mentah memuat 25.462 dari 86.821 baris terjawab pada data latih (29,3\%) yang posisi jawabannya tidak menunjuk pada teks jawaban.
+
+Hasil pemeriksaan menunjukkan dua hal yang memengaruhi rancangan eksperimen. Pertama, satu konteks dipakai rata-rata 6,8 pertanyaan (130.319 baris pada 19.029 konteks unik), sehingga pemisahan data secara acak per baris akan menempatkan konteks yang sama pada data latih dan data validasi. Kedua, panjang konteks memiliki median 98 kata dan persentil ke-95 sebesar 192 kata, sehingga batas panjang masukan dapat ditetapkan dari distribusi tersebut (Subbab 3.2.4).
+
+Pembagian data dilakukan pada tingkat artikel, bukan pada tingkat baris. Data uji memakai seluruh pembagian \textit{dev} asli yang memuat 35 artikel, dan tidak ada artikel yang muncul pada data latih sekaligus data uji. Data latih mentah memuat 441 artikel, dan setelah penyaringan dua artikel tidak menyisakan baris yang dapat dipakai sehingga tersisa 439 artikel.
+
+Data validasi dibentuk dengan memisahkan 10\% dari 439 artikel tersebut, yaitu 44 artikel, menggunakan \textit{seed} tetap, dan 395 artikel sisanya menjadi data latih. Dari 70.051 baris hasil penyaringan, 5.997 baris masuk ke data validasi sehingga tersisa 64.054 baris untuk pelatihan. Pemisahan pada tingkat artikel membuat data validasi meniru kondisi data uji sekaligus mencegah kebocoran konteks, dan hasil pembagian akhir ditunjukkan pada Tabel~\ref{tab:pembagian-data}.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Pembagian data setelah praproses}
+  \label{tab:pembagian-data}
+  \begin{tabularx}{\textwidth}{@{}Xrrr@{}}
+    \hline
+    \textbf{Ukuran} & \textbf{Latih} & \textbf{Validasi} & \textbf{Uji} \\
+    \hline
+    Jumlah baris & 64.054 & 5.997 & 5.244 \\
+    Artikel & 395 & 44 & 35 \\
+    Konteks unik & 17.136 & 1.574 & 1.200 \\
+    Jumlah jawaban acuan & 64.054 & 5.997 & 16.428 \\
+    Median panjang konteks (\textit{token}) & 135 & 136 & 137 \\
+    \hline
+  \end{tabularx}
 \end{table}
 
-    \subsection{Subbab}
+\subsection{Praproses Data}
 
-    \blindtext%
+Praproses membuang baris pertanyaan tanpa jawaban, memperbaiki posisi jawaban, membuang duplikat, dan menyiapkan fitur masukan. Baris bertanda pertanyaan tanpa jawaban dibuang, yaitu 43.498 baris data latih dan 5.945 baris data uji, karena penelitian ini tidak menguji kemampuan model memutuskan bahwa suatu pertanyaan tidak dapat dijawab (Subbab 1.5).
 
-    \subsubsection{Subsubbab}
+Posisi jawaban diperbaiki pada baris yang ditandai tidak valid. Untuk setiap jawaban, konteks dibersihkan dari karakter tak terlihat dan spasi ganda, lalu pencocokan dilakukan bertingkat, yaitu \textit{exact matching}, \textit{exact matching} setelah normalisasi kapitalisasi dan diakritik, dan \textit{fuzzy matching} berbasis Levenshtein dengan ambang kemiripan 85. Hasil pencocokan dirapatkan ke batas kata, dan teks jawaban disimpan sebagai potongan konteks agar posisi dan isinya konsisten.
 
-    \blindtext%
+Perbaikan berhasil pada 8.757 baris data latih, terdiri atas 3.168 baris yang hanya memerlukan normalisasi dan 5.589 baris yang memerlukan \textit{fuzzy matching}. Sebanyak 16.705 baris data latih dan 676 baris data uji dibuang karena jawabannya tidak ditemukan pada konteks. Penulis memeriksa secara manual 30 jawaban hasil \textit{fuzzy matching} dan menemukan 29 jawaban benar (96,7\%), dengan interval kepercayaan Wilson 95\% sebesar 83\% sampai 99\%. Sampel ini kecil, sehingga angka tersebut dilaporkan sebagai gambaran kualitas perbaikan dan bukan sebagai jaminan.
 
-\blindtext%
+Duplikat berdasarkan pasangan konteks dan pertanyaan dibuang, yaitu 65 baris data latih dan 8 baris data uji. Setiap contoh kemudian dibentuk dari pasangan pertanyaan dan konteks dengan panjang maksimum 384 \textit{token} dan \textit{stride} 128 \textit{token} antarjendela, sehingga konteks yang lebih panjang dipecah menjadi lebih dari satu jendela yang saling tumpang tindih. Panjang jawaban maksimum ditetapkan 30 \textit{token}.
+
+Batas 384 \textit{token} ditetapkan dari distribusi panjang konteks hasil tokenisasi, yaitu median 135 \textit{token}, persentil ke-95 sebesar 261 \textit{token}, dan persentil ke-99 sebesar 349 \textit{token}. Hanya 0,70\% konteks yang melebihi 384 \textit{token} dan dipecah menjadi lebih dari satu jendela, dan seluruh jawaban berada di dalam setidaknya satu jendela sehingga tidak ada label yang hilang. Setiap contoh menyimpan tiga masukan, yaitu \textit{input\_ids}, \textit{attention\_mask}, dan \textit{token\_type\_ids}, serta dua label berupa posisi awal dan posisi akhir jawaban.
+
+\subsection{Model IndoBERT-base dan Pengaturan \textit{Fine-Tuning}}
+
+Model yang dipakai adalah \texttt{indobert-base-p2} dengan 12 lapisan \textit{encoder}, ukuran \textit{hidden} 768, 12 \textit{head} perhatian, ukuran lapisan \textit{feed-forward} 3.072, dan kosakata 50.000 \textit{token}. Model untuk tugas \textit{question answering} tidak memiliki lapisan \textit{pooler}, sehingga jumlah parameternya 123.852.290. Model ini dipralatih pada korpus Indo4B \parencite{wilie2020indonlu}. Fase 2 dipilih karena melanjutkan pralatih pada panjang urutan maksimum 512 \textit{token}, sedangkan fase 1 hanya 128 \textit{token}, dan penelitian ini memakai jendela hingga 384 \textit{token} (Subbab 2.2.2).
+
+\textit{Task head} ditambahkan di atas keluaran \textit{encoder} untuk memprediksi posisi awal dan posisi akhir jawaban. \textit{Head} ini terdiri atas satu lapisan linear berukuran 768 ke 2, yaitu 1.538 parameter (0,001\% dari seluruh parameter). Keluaran model berupa skor untuk setiap posisi \textit{token}. \textit{Span} dengan jumlah skor awal dan akhir tertinggi, dengan posisi awal tidak melewati posisi akhir dan panjang paling banyak 30 \textit{token}, dipilih sebagai jawaban, dan untuk pertanyaan yang konteksnya terbagi menjadi lebih dari satu jendela dipakai \textit{span} dengan skor tertinggi di antara seluruh jendela.
+
+\textit{Fine-tuning} dilakukan dengan pengaturan pada Tabel~\ref{tab:hyperparameter}. \textit{Learning rate} dan ukuran \textit{batch} berada pada rentang yang direkomendasikan \textcite{devlin2019bert} untuk \textit{fine-tuning} BERT, sedangkan jumlah \textit{epoch} maksimum 6 dibatasi oleh \textit{early stopping}. Pada setiap \textit{epoch}, model dievaluasi pada data validasi, dan bobot dengan F1 validasi tertinggi disimpan sebagai \textit{checkpoint}. Fungsi kerugian adalah \textit{cross-entropy} pada posisi awal dan posisi akhir jawaban, dengan nilai kerugian keduanya dirata-ratakan. Seluruh pengaturan ditetapkan sebelum pelatihan dan tidak disetel menggunakan data uji.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Pengaturan \textit{fine-tuning}}
+  \label{tab:hyperparameter}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{6.2cm}X@{}}
+    \hline
+    \textbf{Parameter} & \textbf{Nilai} \\
+    \hline
+    Model dasar & \texttt{indobert-base-p2} \\
+    Panjang urutan maksimum & 384 \textit{token} \\
+    \textit{Stride} antarjendela & 128 \textit{token} \\
+    Panjang jawaban maksimum & 30 \textit{token} \\
+    Ukuran \textit{batch} & 16 \\
+    Fungsi kerugian & \textit{Cross-entropy} posisi awal dan akhir, dirata-ratakan \\
+    \textit{Optimizer} & AdamW \\
+    \textit{Learning rate} & $2 \times 10^{-5}$ \\
+    Jumlah \textit{epoch} maksimum & 6 \\
+    \textit{Early stopping} & \textit{patience} 2 pada F1 validasi, ambang perbaikan 0,001 \\
+    Pemilihan \textit{checkpoint} & F1 validasi tertinggi, bobot terbaik dipulihkan \\
+    \textit{Seed} & 42, 1337, dan 2024 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Tiga \textit{seed} dipakai untuk mengukur variasi hasil akibat proses pelatihan, mengikuti praktik pada penelitian kuantisasi model berbahasa Indonesia yang melaporkan tiga \textit{seed} \parencite{sanjaya2026quantization}. Setiap \textit{seed} menghasilkan satu \textit{checkpoint} yang menjadi dasar bagi ketiga konfigurasi.
+
+\subsection{Implementasi Kuantisasi \textit{Weight-Only} INT4}
+
+Kuantisasi diterapkan pada bobot model setelah \textit{fine-tuning} selesai, tanpa pelatihan ulang dan tanpa data kalibrasi. Skema yang dipakai adalah kuantisasi seragam simetris INT4 dengan bilangan bulat pada rentang $-7$ sampai 7 (Persamaan~\ref{eq:simetris} dan Persamaan~\ref{eq:skala} pada Subbab 2.5.3). Aktivasi tidak dikuantisasi, sehingga konfigurasi ini termasuk \textit{weight-only} PTQ (Subbab 2.5.4). Nilai $\alpha$ diambil dari bobot itu sendiri, sehingga tidak ada hiperparameter kuantisasi yang disetel menggunakan data uji.
+
+Model hasil \textit{fine-tuning} FP32 disalin agar bobot asli tetap tersedia, lalu seluruh lapisan linear dan \textit{embedding} dikumpulkan dengan menelusuri modul secara rekursif. Untuk setiap \textit{tensor} bobot dihitung nilai absolut terbesar $\alpha$, yaitu satu $\alpha$ per \textit{tensor} pada konfigurasi \textit{per-tensor} (Persamaan~\ref{eq:skala-coarse}) dan satu $\alpha$ per baris pada konfigurasi \textit{per-channel} (Persamaan~\ref{eq:skala-fine}), lalu skala dihitung sebagai $s = \alpha / 7$. Setiap bobot dibagi dengan skalanya, dibulatkan ke bilangan bulat terdekat, dan dibatasi pada $-7$ sampai 7. Modul asli kemudian diganti dengan modul terkuantisasi yang menyimpan bilangan bulat dalam \textit{container} 8-bit beserta skala dalam FP32. Contoh penghitungan dengan angka tercantum pada Tabel~\ref{tab:contoh-format} dan Tabel~\ref{tab:contoh-granularitas}.
+
+Skala dihitung dari bobot FP32 hasil \textit{fine-tuning}, bukan dari bobot FP16, agar pembulatan tidak terjadi dua kali. Pada inferensi, bilangan bulat dikalikan dengan skalanya melalui \textit{dequantization} sehingga kembali menjadi bobot FP16 sebelum operasi linear dijalankan, dan aktivasi tetap pada FP16. Karena itu, penghematan berada pada ukuran penyimpanan, bukan pada waktu komputasi. Bobot INT4 disimpan dalam \textit{container} 8-bit tanpa \textit{bit-packing}, sehingga ukuran bobot terkuantisasi dua kali ukuran teoretisnya (Subbab 2.5.7).
+
+Prosedur yang sama diterapkan pada \textit{checkpoint} ketiga \textit{seed}, karena prosedur ini hanya beroperasi pada \textit{tensor} bobot dan tidak bergantung pada data. Perbedaan antar\textit{seed} hanya berasal dari bobot hasil \textit{fine-tuning}.
+
+Kuantisasi mencakup seluruh matriks bobot, termasuk \textit{embedding}, karena \textit{embedding} menyumbang 31,3\% dari seluruh parameter dan melewatkannya akan membuat 31,3\% parameter tetap berukuran FP16 sehingga penghematan ukuran yang menjadi tujuan penelitian berkurang. \textit{Bias}, normalisasi lapisan, dan \textit{answer head} tidak dikuantisasi dan disimpan dalam FP16, sama seperti pada \textit{baseline}. Sumbu \textit{per-channel} adalah baris \textit{tensor}, yaitu satu keluaran pada lapisan linear dan satu \textit{token} pada \textit{embedding} kata, posisi, dan tipe \textit{token}. Modul yang dikuantisasi, jumlah parameter, dan jumlah skalanya ditunjukkan pada Tabel~\ref{tab:modul-kuantisasi}.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Modul IndoBERT-base untuk \textit{question answering} dan jumlah skala kuantisasinya}
+  \label{tab:modul-kuantisasi}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xrrrr@{}}
+    \hline
+    \textbf{Kelompok modul} & \textbf{Jumlah \textit{tensor}} & \textbf{Jumlah parameter} & \textbf{Dikuantisasi} & \textbf{Skala \textit{per-channel}} \\
+    \hline
+    \textit{Embedding} kata, posisi, dan tipe \textit{token} & 3 & 38.794.752 & ya & 50.514 \\
+    Proyeksi atensi (\textit{query}, \textit{key}, \textit{value}, keluaran) & 48 & 28.311.552 & ya & 36.864 \\
+    Lapisan \textit{feed-forward} (12 lapisan) & 24 & 56.623.104 & ya & 46.080 \\
+    \textit{Bias} dan normalisasi lapisan & -- & 121.346 & tidak & -- \\
+    \textit{Answer head} & -- & 1.536 & tidak & -- \\
+    \hline
+    Total & 75 & 123.852.290 & 123.729.408 & 133.458 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Skala \textit{per-channel} menambah 0,2\% dari ukuran FP16, sedangkan skala \textit{per-tensor} hanya menambah 300 \textit{byte}. Ukuran model hasil hitungan ditunjukkan pada Tabel~\ref{tab:ukuran-model}, dengan 1 MB sama dengan $10^{6}$ \textit{byte}.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Ukuran model hasil hitungan dengan parameter tak terkuantisasi FP16 dan skala FP32}
+  \label{tab:ukuran-model}
+  \begin{tabularx}{\textwidth}{@{}Xrr@{}}
+    \hline
+    \textbf{Konfigurasi} & \textbf{Ukuran (MB)} & \textbf{Rasio terhadap FP16} \\
+    \hline
+    FP16 & 247,7 & 100\% \\
+    INT4 \textit{per-tensor} dalam \textit{container} 8-bit & 124,0 & 50,1\% \\
+    INT4 \textit{per-channel} dalam \textit{container} 8-bit & 124,5 & 50,3\% \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Ukuran berkas aktual diukur setelah model disimpan dan dibandingkan dengan hitungan pada Tabel~\ref{tab:ukuran-model}.
+
+\subsection{Skenario dan Pengukuran Pengujian}
+
+Pengujian dilakukan terhadap tiga konfigurasi pada data uji yang sama, dengan tiga \textit{seed} sebagai ulangan. Setiap konfigurasi diukur dengan empat metrik, yaitu EM, F1, ukuran model, dan latensi inferensi. Definisi keempat metrik dibahas pada Subbab 2.6, sedangkan subbab ini menetapkan skenario dan prosedur pengukurannya.
+
+EM dan F1 diukur pada setiap \textit{seed}, sehingga terdapat sembilan nilai untuk masing-masing metrik dari tiga konfigurasi dan tiga \textit{seed}. Ukuran model diukur sekali untuk setiap konfigurasi karena nilainya tidak bergantung pada \textit{seed}. Latensi diukur pada setiap konfigurasi menggunakan model \textit{seed} 42 dengan satu \textit{batch} berisi 16 contoh berpanjang 384 \textit{token} yang diambil dari data uji. Pengukuran diawali 10 iterasi \textit{warm-up} dan dilanjutkan 100 pengulangan, dengan sinkronisasi CUDA sebelum dan sesudah setiap pengulangan, lalu dilaporkan median dan persentil ke-95 waktu per \textit{batch}. Rangkuman skenario ditunjukkan pada Tabel~\ref{tab:skenario}.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Skenario pengujian}
+  \label{tab:skenario}
+  \begin{tabularx}{\textwidth}{@{}c>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{2.8cm}>{\raggedright\arraybackslash}p{1.6cm}>{\raggedright\arraybackslash}X@{}}
+    \hline
+    \textbf{No} & \textbf{Konfigurasi} & \textbf{Presisi bobot} & \textbf{Granularitas} & \textbf{Ulangan} & \textbf{Metrik} \\
+    \hline
+    1 & \textit{Baseline} & FP16 & -- & 3 \textit{seed} & EM, F1, ukuran, latensi \\
+    2 & Kuantisasi & INT4 & \textit{per-tensor} & 3 \textit{seed} & EM, F1, ukuran, latensi \\
+    3 & Kuantisasi & INT4 & \textit{per-channel} & 3 \textit{seed} & EM, F1, ukuran, latensi \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Data uji berisi 5.244 pertanyaan dengan 16.428 jawaban acuan. Evaluasi EM dan F1 memakai jawaban acuan dengan skor tertinggi untuk setiap pertanyaan, sesuai prosedur standar SQuAD \parencite{rajpurkar2016squad}, dan normalisasi teks mengikuti Subbab 2.6.1.
+
+\section{Teknik Analisis Hasil Penelitian}
+
+\subsection{Analisis Deskriptif}
+
+Analisis deskriptif menggambarkan selisih kinerja dan efisiensi antara konfigurasi kuantisasi dan \textit{baseline}. Untuk EM dan F1 dilaporkan rata-rata dan simpangan baku sampel (pembagi $n-1$) dari tiga \textit{seed}, serta selisih terhadap \textit{baseline} pada \textit{seed} yang sama. Untuk ukuran model dilaporkan ukuran berkas aktual dalam megabita dan rasionya terhadap FP16. Untuk latensi dilaporkan median dan persentil ke-95 tanpa uji statistik.
+
+Pertukaran antara kinerja dan efisiensi dianalisis dengan menyandingkan penurunan F1 (dalam poin) dan pengurangan ukuran model (dalam persen) pada setiap granularitas. Dari penyandingan ini terlihat granularitas mana yang memberi penghematan ukuran terbesar untuk penurunan F1 terkecil.
+
+Selisih EM dan F1 dihitung berpasangan per \textit{seed} agar variasi akibat pelatihan tidak tercampur dengan pengaruh kuantisasi. Selisih antargranularitas kemudian dibandingkan dengan simpangan baku antar\textit{seed}. Bila selisih antargranularitas lebih kecil daripada simpangan baku tersebut, kedua granularitas dilaporkan tidak dapat dibedakan secara deskriptif. Karena hanya ada tiga \textit{seed}, simpangan baku dipakai sebagai gambaran distribusi dan bukan sebagai dasar inferensi.
+
+\subsection{Uji Signifikansi Statistik}
+
+Analisis deskriptif menunjukkan besarnya selisih, tetapi tidak menunjukkan apakah selisih tersebut berasal dari perlakuan atau dari variasi acak pada sampel uji. Karena itu dilakukan uji signifikansi berpasangan, dengan pemilihan uji sesuai sifat metrik pada Tabel~\ref{tab:uji-metrik}.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Pemilihan uji signifikansi per metrik}
+  \label{tab:uji-metrik}
+  \begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}p{5.6cm}X@{}}
+    \hline
+    \textbf{Metrik} & \textbf{Sifat nilai} & \textbf{Uji} \\
+    \hline
+    EM & biner per sampel, berpasangan & uji McNemar dengan koreksi kontinuitas \\
+    F1 & kontinu per sampel, berpasangan & \textit{paired bootstrap} 10.000 sampel ulang \\
+    Ukuran model & deterministik & tidak diuji \\
+    Latensi & bergantung perangkat dan implementasi & tidak diuji, dilaporkan deskriptif \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Untuk EM, hasil kedua konfigurasi disusun menjadi tabel kontingensi, dengan $b$ jumlah pertanyaan yang benar pada konfigurasi pertama tetapi salah pada konfigurasi kedua dan $c$ sebaliknya. Statistik uji dihitung dengan Persamaan~\ref{eq:mcnemar}. Hipotesis nol menyatakan bahwa kedua konfigurasi memiliki proporsi jawaban benar yang sama ($b = c$ dalam harapan), sedangkan hipotesis alternatif menyatakan proporsi itu berbeda. Bila jumlah sampel yang berbeda ($b + c$) kurang dari 25, dipakai uji binomial eksak \parencite{fagerland2013mcnemar}. Untuk F1, selisih rata-rata skor dihitung pada setiap sampel ulang dengan Persamaan~\ref{eq:bootstrap}. Sampel ulang diambil pada tingkat pertanyaan (5.244 pertanyaan), dengan indeks yang sama untuk kedua konfigurasi. Hipotesis nol menyatakan bahwa rata-rata selisih F1 kedua konfigurasi sama dengan nol, sedangkan hipotesis alternatif menyatakan selisih itu tidak nol. Nilai $p$ dua sisi dan interval persentil 95\% dari $\Delta^{*}$ dihitung dari 10.000 sampel ulang tersebut \parencite{bergkirkpatrick2012, efron1993}, dan selisih dilaporkan bersama intervalnya.
+
+Ukuran model tidak diuji karena nilainya dihitung secara deterministik dari jumlah parameter dan tipe datanya, tanpa proses pengukuran yang mengandung variasi acak. Latensi tidak diuji karena nilainya bergantung pada perangkat dan implementasi, dan hanya diukur pada satu model dengan pengulangan pada perangkat yang sama.
+
+Terdapat tiga perbandingan berpasangan, yaitu \textit{baseline} terhadap \textit{per-tensor}, \textit{baseline} terhadap \textit{per-channel}, dan \textit{per-tensor} terhadap \textit{per-channel}. Ketiga perbandingan ini meningkatkan peluang kesalahan tipe I, sehingga nilai $p$ dikoreksi dengan metode Holm \parencite{holm1979}. Koreksi diterapkan terpisah untuk setiap metrik dengan $m = 3$, dan dijalankan di dalam masing-masing \textit{seed}.
+
+Suatu perbedaan dinyatakan signifikan bila signifikan setelah koreksi Holm pada taraf $\alpha = 0{,}05$ di ketiga \textit{seed} dengan arah yang sama. Syarat ketiga \textit{seed} ini lebih ketat daripada satu uji tunggal, sehingga koreksi tambahan antar\textit{seed} tidak diperlukan. Uji berpasangan pada setiap \textit{seed} hanya menangkap variasi sampel uji untuk model yang telah dilatih, sedangkan variasi akibat \textit{seed} pelatihan dilaporkan secara deskriptif. Karena itu, kesimpulan penelitian ini tidak mencakup seluruh kemungkinan hasil pelatihan.
+
+\section{Jadwal Penelitian}
+
+Penelitian direncanakan berlangsung selama 6 bulan, yaitu Juli sampai Desember 2026, dimulai dari studi literatur dan penyusunan proposal, dilanjutkan penyiapan data, pelatihan, kuantisasi, pengujian, dan penyusunan laporan. Rincian kegiatan per bulan ditunjukkan pada Tabel~\ref{tab:jadwal}.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Jadwal penelitian}
+  \label{tab:jadwal}
+  \begin{tabularx}{\textwidth}{@{}c>{\raggedright\arraybackslash}X*{6}{c}@{}}
+    \hline
+    \textbf{No} & \textbf{Kegiatan} & \textbf{Jul} & \textbf{Agu} & \textbf{Sep} & \textbf{Okt} & \textbf{Nov} & \textbf{Des} \\
+    \hline
+    1 & Studi literatur dan penyusunan proposal & \checkmark & \checkmark & & & & \\
+    2 & Penyusunan kajian pustaka dan kerangka berpikir & & \checkmark & \checkmark & & & \\
+    3 & Analisis data eksploratif dan praproses data & & & \checkmark & \checkmark & & \\
+    4 & Implementasi kode program pelatihan dan kuantisasi & & & & \checkmark & & \\
+    5 & \textit{Fine-tuning} tiga \textit{seed} dan pemilihan \textit{checkpoint} & & & & \checkmark & \checkmark & \\
+    6 & Penerapan kuantisasi dan pengukuran ukuran model & & & & & \checkmark & \\
+    7 & Pengujian, analisis deskriptif, dan uji signifikansi & & & & & \checkmark & \\
+    8 & Penyusunan Bab IV dan Bab V & & & & & \checkmark & \checkmark \\
+    9 & Pemeriksaan akhir dan penyusunan laporan & & & & & & \checkmark \\
+    \hline
+  \end{tabularx}
+\end{table}

@@ -1,0 +1,31 @@
+%--------------------------------------------------------------------%
+%
+% Ringkasan (Pedoman UM Lampiran 7a) — Bahasa Indonesia, spasi tunggal,
+% maksimal 750 kata. Baris identitas: Nama-akhir, Nama-awal. Tahun. dst.
+%
+%--------------------------------------------------------------------%
+
+\clearpage
+\addcontentsline{toc}{chapter}{RINGKASAN}
+
+\begin{center}
+    \bfseries RINGKASAN
+\end{center}
+
+\begin{singlespace}
+
+\noindent \penulis. \bulantahun. \textit{\judul}. Skripsi, \departemen, \fakultas, Universitas Negeri Malang. Pembimbing: (I) \pembimbingSatu\ifx\pembimbingDua\empty\else, (II) \pembimbingDua\fi
+
+\vspace{0.5\baselineskip}
+\noindent \textbf{Kata Kunci:} \katakunci%
+
+\vspace{\baselineskip}
+
+Model bahasa pra-latih berukuran besar telah menjadi pilihan utama pada tugas pemrosesan bahasa alami berbahasa Indonesia, termasuk \textit{extractive question answering}. Ukuran model tersebut membatasi penerapan pada perangkat dengan memori terbatas, sehingga diperlukan teknik kompresi yang tidak menuntut pelatihan ulang. Kuantisasi pascapelatihan \textit{weight-only} INT4 menjanjikan pengurangan penyimpanan hingga seperempat dibanding FP16, tetapi besarnya penurunan kinerja bergantung pada granularitas skala kuantisasi. Pada tugas \textit{extractive question answering} bahasa Indonesia, pengaruh granularitas tersebut belum diuji secara sistematis dengan uji signifikansi.
+
+Penelitian ini mengevaluasi pengaruh granularitas kuantisasi \textit{weight-only} INT4 terhadap kinerja dan efisiensi model IndoBERT-base fase 2 pada \textit{dataset} SQuAD-id. Data disaring menjadi 70.051 baris latih, 5.997 baris validasi, dan 5.244 baris uji. Model di-\textit{fine-tune} pada presisi FP32 dengan tiga nilai \textit{seed}, lalu bobotnya disalin menjadi tiga konfigurasi, yaitu \textit{baseline} FP16, kuantisasi per-tensor, dan kuantisasi \textit{per-channel}. Kinerja diukur dengan \textit{Exact Match} dan F1, sedangkan efisiensi diukur melalui ukuran berkas model dan latensi inferensi. Perbedaan kinerja diuji dengan uji McNemar untuk EM dan \textit{paired bootstrap} 10.000 sampel ulang untuk F1, disertai koreksi Holm pada tiga perbandingan berpasangan.
+
+Hasil penelitian menunjukkan [EM dan F1 rata-rata ketiga konfigurasi beserta selisihnya terhadap \textit{baseline}, ukuran berkas aktual dan rasionya terhadap FP16, serta nilai $p$ setelah koreksi Holm]. Temuan ini memberi gambaran mengenai pertukaran antara penghematan penyimpanan dan penurunan kinerja, sehingga dapat menjadi dasar pemilihan granularitas kuantisasi untuk penerapan IndoBERT pada perangkat dengan sumber daya terbatas. Kontribusi penelitian ini adalah bukti empiris mengenai pengaruh granularitas kuantisasi \textit{weight-only} pada tugas \textit{extractive question answering} bahasa Indonesia, beserta prosedur pengujian yang memperhitungkan variasi \textit{seed} dan koreksi perbandingan berganda.
+
+\end{singlespace}
+\clearpage

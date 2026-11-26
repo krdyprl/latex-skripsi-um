@@ -17,6 +17,11 @@
 % Times New Roman 12 pt
 \usepackage{mathptmx}
 
+% Perataan mikro: sedikit peregangan dan pemotongan huruf agar baris
+% rata kanan-kiri tidak melewati margin (overfull).
+\usepackage{microtype}
+
+
 % Bahasa Indonesia
 \usepackage[bahasa]{babel}
 
@@ -30,6 +35,8 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{tikz}           % Diagram vektor (gambar proses kuantisasi)
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
 \usepackage{amsmath}        % Persamaan matematika (\text, \frac, align, dll.)
 \usepackage{amssymb}        % Simbol matematika tambahan (mis. \mathbb)
 \usepackage{titling}
@@ -42,8 +49,21 @@
 \usepackage{tabularx}       % Tabel lebar otomatis (kolom X) agar pas \textwidth
 \usepackage{longtable}      % Tabel panjang yang dapat terpotong antar-halaman
 \usepackage{fancyhdr}       % Nomor halaman UM
-\usepackage{hyperref}       % Tautan di daftar isi
+% Tambal penulisan entri Daftar Isi bab SEBELUM hyperref dimuat: hyperref
+% membungkus ulang \@chapter sehingga tambalan sesudahnya hilang.
+\makeatletter
+\patchcmd{\@chapter}
+  {\protect\numberline{\thechapter}#1}
+  {\protect\numberline{\tocchapapp\space\tocchapnum}\protect\MakeUppercase{#1}}
+  {}{\PackageWarning{if-itb-thesis}{Entri Daftar Isi bab gagal ditambal}}
+\makeatother
+\usepackage[hidelinks]{hyperref}  % Tautan di daftar isi (tanpa kotak/garis warna)
 \usepackage{titlesec}       % Format judul bab/subbab
+\usepackage{enumitem}     % Spasi butir daftar (rapat, tanpa jarak antarbutir)
+\setlist{itemsep=0pt, parsep=0pt, partopsep=0pt}
+
+% Cadangan peregangan agar baris rata kanan-kiri tidak melewati margin
+\setlength{\emergencystretch}{3em}
 \usepackage{indentfirst}
 
 
@@ -101,4 +121,123 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[R]{\thepage}
+\setlength{\headheight}{14.5pt}
+
 \renewcommand{\headrulewidth}{0pt}
+
+%-------------------------------------------------------------------%
+% Daftar tabel, daftar gambar, dan daftar rumus (Pedoman UM Bab 8)
+%
+% Setiap daftar diawali baris judul kolom: kata "Tabel"/"Gambar"/
+% "Rumus" di tepi kiri dan "Halaman" di tepi kanan. Daftar Rumus
+% diisi otomatis, yaitu setiap persamaan bernomor yang ditulis
+% dengan lingkungan equation dicatat ke berkas .rum.
+%-------------------------------------------------------------------%
+\makeatletter
+
+\newcommand*{\@listheadrow}[1]{%
+  \par\noindent #1\hfill Halaman\par
+  \nobreak\vspace{0.5\baselineskip}%
+}
+
+% Baris judul kolom untuk masing-masing daftar
+\@namedef{listhead@toc}{\@listheadrow{}}
+\@namedef{listhead@lot}{\@listheadrow{Tabel}}
+\@namedef{listhead@lof}{\@listheadrow{Gambar}}
+\@namedef{listhead@rum}{\@listheadrow{Rumus}}
+
+\let\@starttoc@orig\@starttoc
+
+\renewcommand*{\@starttoc}[1]{%
+  \@ifundefined{listhead@#1}{}{\@nameuse{listhead@#1}}%
+  \begin{singlespace}%
+  \emergencystretch=3em
+  \@starttoc@orig{#1}%
+  \end{singlespace}%
+}
+
+% Daftar Tabel dan Daftar Gambar: judul halaman + entri pada Daftar Isi
+\renewcommand*{\listoftables}{%
+  \chapter*{\listtablename}%
+  \phantomsection
+  \addcontentsline{toc}{chapter}{DAFTAR TABEL}%
+  \@starttoc{lot}%
+}
+\renewcommand*{\listoffigures}{%
+  \chapter*{\listfigurename}%
+  \phantomsection
+  \addcontentsline{toc}{chapter}{DAFTAR GAMBAR}%
+  \@starttoc{lof}%
+}
+
+% Daftar Rumus: judul halaman + entri "Rumus (2.1)"
+\newcommand*{\listofrumusname}{Daftar Rumus}
+\newcommand*{\listofrumus}{%
+  \chapter*{\listofrumusname}%
+  \phantomsection
+  \addcontentsline{toc}{chapter}{DAFTAR RUMUS}%
+  \@starttoc{rum}%
+}
+\newcommand*{\l@rumus}[2]{\@dottedtocline{1}{0em}{0em}{#1}{#2}}
+
+% Entri Daftar Tabel dan Daftar Gambar diberi awalan jenisnya
+% (contoh: "Tabel 2.1 Karakteristik dataset ...")
+\renewcommand*{\l@table}[2]{%
+  \begingroup
+  \def\numberline##1{\makebox[2.4em][l]{##1}}%
+  \@dottedtocline{1}{0em}{5.4em}{Tabel~#1}{#2}%
+  \endgroup}
+\renewcommand*{\l@figure}[2]{%
+  \begingroup
+  \def\numberline##1{\makebox[2.4em][l]{##1}}%
+  \@dottedtocline{1}{0em}{5.9em}{Gambar~#1}{#2}%
+  \endgroup}
+
+% Catat setiap persamaan bernomor ke Daftar Rumus
+\AfterEndEnvironment{equation}{%
+  \phantomsection
+  \addcontentsline{rum}{rumus}{Rumus~(\theequation)}%
+}
+
+\makeatother
+
+%-------------------------------------------------------------------%
+% Daftar Isi (Pedoman UM Bab 8)
+%
+% Seluruh entri memakai titik-titik penuh sampai nomor halaman. Entri
+% bab ditulis dua baris, yaitu label bab ("BAB I", atau "Lampiran 1"
+% pada bagian lampiran) lalu judul bab dalam kapital. Entri halaman
+% awal dan daftar sudah ditulis kapital pada berkas sumbernya.
+%-------------------------------------------------------------------%
+\makeatletter
+
+\renewcommand*{\@pnumwidth}{2.2em}
+
+% Label depan entri bab pada Daftar Isi; diganti "Lampiran" pada lampiran.
+\newcommand*{\tocchapapp}{BAB}
+\newcommand*{\tocchapnum}{\Roman{chapter}}
+
+% Titik-titik penuh dan nomor halaman di ujung baris yang sedang berjalan.
+\newcommand*{\@tocleaders}{%
+  \nobreak\leaders\hbox{$\m@th\mkern\@dotsep mu\hbox{.}\mkern\@dotsep mu$}\hfill
+  \nobreak\hb@xt@\@pnumwidth{\hfil\@tocpage}\par}
+
+% Satu baris penuh: teks, titik-titik, nomor halaman.
+\newcommand*{\@tocdots}[1]{\noindent #1\@tocleaders}
+
+\renewcommand*{\l@chapter}[2]{%
+  \ifnum \c@tocdepth >\m@ne
+    \par
+    \addpenalty{-\@highpenalty}%
+    \begingroup
+      \rightskip\@tocrmarg \parfillskip-\rightskip \parindent\z@
+      \def\@tocpage{#2}%
+      % \numberline{BAB I} menjadi baris pertama; judul menyusul di baris kedua.
+      \def\numberline##1{\@tocdots{##1}}%
+      \noindent
+      #1\@tocleaders
+      \penalty\@highpenalty
+    \endgroup
+  \fi}
+
+\makeatother

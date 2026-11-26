@@ -1,0 +1,91 @@
+%--------------------------------------------------------------------%
+%
+% Bab I — Pendahuluan
+%
+% @author Petra Novandi
+%
+%--------------------------------------------------------------------%
+%
+% Berisi latar belakang, rumusan masalah, tujuan penelitian, dan
+% batasan masalah.
+%
+%--------------------------------------------------------------------%
+
+\chapter{Pendahuluan}
+
+\section{Latar Belakang}
+
+Pemanfaatan model bahasa pada pengolahan bahasa alami (\textit{Natural Language Processing}) mencakup tugas klasifikasi, penerjemahan, dan \textit{question answering}, yaitu tugas menjawab pertanyaan berdasarkan informasi yang tersedia \parencite{jurafsky2025speech}. Pada \textit{extractive question answering}, sistem tidak menyusun teks baru, melainkan memilih satu rentang teks (\textit{span}) dari konteks \parencite{jurafsky2025speech}. Rentang tersebut berasal langsung dari teks sumber, sehingga model harus memahami hubungan antara pertanyaan dan konteks.
+
+BERT (\textit{Bidirectional Encoder Representations from Transformers}) adalah model bahasa pralatih berarsitektur \textit{Transformer} yang disesuaikan pada tugas tertentu melalui \textit{fine-tuning}, termasuk \textit{question answering} \parencite{devlin2019bert}. Untuk bahasa Indonesia, IndoBERT dilatih pada korpus Indo4B dan disediakan sebagai bagian dari \textit{benchmark} IndoNLU \parencite{wilie2020indonlu}. Selain model, tugas ini memerlukan \textit{dataset} evaluasi. SQuAD (\textit{Stanford Question Answering Dataset}) dipakai pada empat penelitian kuantisasi model \textit{encoder} \parencite{bai2022towards, guo2023olive, wei2022outlier, zadeh2022mokey}. Versi terjemahannya, yaitu SQuAD-id, dipakai pada dua studi \textit{question answering} berbahasa Indonesia \parencite{ramaputra2026evaluating, suhendra2026matrik}.
+
+Kebutuhan penyimpanan menjadi salah satu kendala penerapan model bahasa karena ukuran model bertambah sebanding dengan jumlah parameter dan jumlah bit untuk setiap parameter \parencite{gholami2021survey}. Model IndoBERT-base untuk tugas \textit{extractive question answering} memiliki 123.852.290 parameter, sehingga ukuran teoretisnya sekitar 495,4 MB pada FP32 (32 bit) dan 247,7 MB pada FP16 (16 bit). Pada sistem yang menyimpan satu model untuk setiap tugas, kebutuhan ini bertambah sebanyak model yang disediakan, misalnya sekitar 2,5 GB untuk sepuluh model pada FP16. Kondisi yang diharapkan adalah ukuran penyimpanan menurun tanpa mengurangi kemampuan model menjawab pertanyaan, tetapi dampak penurunan presisi bobot terhadap kemampuan tersebut berbeda-beda antarpenelitian.
+
+Pada model \textit{encoder} berbahasa Indonesia, \textcite{abdurrahman2023implementing} menerapkan kuantisasi pascapelatihan (\textit{post-training quantization}, PTQ) dan \textit{quantization-aware training} (QAT) pada IndoBERT dengan bobot 16, 8, 6, dan 4 bit untuk tujuh tugas IndoNLU. F1 rata-rata pada PTQ 4-bit turun dari 77,35 pada FP32 menjadi 72,78, sedangkan QAT 4-bit mencapai 74,94, dengan ukuran model 59,75 MB dibanding 474,72 MB. \textcite{suhendra2026matrik} membandingkan model BERT berbahasa Indonesia pada SQuAD-id tanpa kuantisasi dan memakai \textit{bootstrap}, dengan F1 63,59 untuk \texttt{indobert-base-p1} dan 71,58 untuk \texttt{indolem/indobert-base-uncased}.
+
+Pada \textit{question answering}, Ramaputra dan Joddy (\citeyear{ramaputra2026evaluating}) mengukur dampak PTQ \textit{weight-only} dengan metode AWQ dan GPTQ pada SQuAD-id menggunakan model bahasa besar \textit{decoder-only}. \textit{Exact Match} (EM) pada Qwen2.5-14B 4-bit turun dari 48,61 menjadi 44,73 (AWQ) dan 43,80 (GPTQ), sedangkan pada Qwen2.5-7B 4-bit EM berubah dari 42,05 menjadi 42,15 (AWQ) dan 42,34 (GPTQ). Pada model \textit{encoder} berbahasa Inggris, \textcite{zadeh2022mokey} memetakan bobot BERT-Large ke indeks 4-bit yang merujuk ke nilai pusat (\textit{centroid}), dan F1 pada SQuAD v1.1 berubah dari 93,15 menjadi 93,17. \textcite{bondarenko2021understanding} melaporkan rata-rata skor GLUE pada BERT-base sebesar 83,06 (FP32), 83,23 bila hanya bobot dikuantisasi 8 bit (W8A32), dan 71,03 bila bobot dan aktivasi dikuantisasi 8 bit (W8A8).
+
+Studi pada IndoBERT melaporkan F1 rata-rata tujuh tugas dan tidak menyebut granularitas yang dipakai, sehingga pengaruh kuantisasi pada tugas \textit{span extraction} tidak dapat dipisahkan \parencite{abdurrahman2023implementing}. Kuantisasi pada SQuAD-id baru dilaporkan untuk model \textit{decoder-only} \parencite{ramaputra2026evaluating}, sedangkan studi SQuAD-id pada model \textit{encoder} tidak menerapkan kuantisasi \parencite{suhendra2026matrik}, sehingga belum diketahui apakah selisih EM tersebut berlaku pada model \textit{encoder} berparameter sekitar 124 juta. Studi yang mengkaji pengelompokan skala dilakukan pada BERT-base berbahasa Inggris dengan tugas GLUE \parencite{bondarenko2021understanding}. Granularitas relevan pada INT4 karena hanya tersedia 16 tingkat nilai, dan satu skala \textit{per-tensor} ditentukan oleh nilai absolut terbesar seluruh \textit{tensor} sehingga satu nilai ekstrem dapat memperlebar langkah kuantisasi seluruh bobot dalam \textit{tensor} itu, sedangkan skala \textit{per-channel} membatasi pengaruh tersebut pada satu baris dengan menambah jumlah skala dari 75 menjadi 133.458 \parencite{gholami2021survey}, sebagaimana dirinci pada Subbab 3.2.6. Dalam penelusuran penulis, belum ditemukan evaluasi \textit{weight-only} PTQ INT4 yang membandingkan granularitas \textit{per-tensor} dan \textit{per-channel} pada model \textit{encoder} berbahasa Indonesia untuk \textit{extractive question answering}, maupun penggunaan uji signifikansi dengan koreksi perbandingan berganda untuk selisih EM dan F1 pada evaluasi kuantisasi.
+
+Penelitian ini menerapkan PTQ, yaitu kuantisasi yang dijalankan setelah \textit{fine-tuning} selesai sehingga tidak memerlukan pelatihan ulang \parencite{gholami2021survey}. Kuantisasi dibatasi pada bobot (\textit{weight-only}), sedangkan aktivasi tetap pada presisi asal, sehingga perubahan yang diukur hanya berasal dari representasi bobot. Presisi yang dipakai adalah INT4 (bilangan bulat 4 bit dengan 16 tingkat nilai), yang secara teoretis memperkecil ukuran bobot menjadi seperempat dari FP16, atau sekitar separuhnya bila INT4 disimpan dalam wadah 8 bit seperti pada penelitian ini. Pada INT8, \textcite{bondarenko2021understanding} melaporkan skor GLUE W8A32 sebesar 83,23 dibanding 83,06 pada FP32, sehingga penelitian ini memilih INT4 yang menurunkan presisi lebih jauh agar pengaruh granularitas lebih mungkin teramati. Pilihan ini merupakan keputusan penulis, dan INT8 tidak diuji.
+
+Kuantisasi dijalankan dengan dua granularitas, yaitu \textit{per-tensor} (satu skala untuk seluruh \textit{tensor}, disebut \textit{coarse-grained}) dan \textit{per-channel} (satu skala untuk setiap baris keluaran, disebut \textit{fine-grained}), yang merupakan dua dari tiga tingkat granularitas pada Subbab 2.5.6. Granularitas \textit{per-group} tidak diuji karena di luar batasan penelitian. Kedua konfigurasi diterapkan pada bobot hasil \textit{fine-tuning} yang sama, sehingga selisih kinerja antarkonfigurasi hanya berasal dari perlakuan kuantisasi.
+
+Berdasarkan uraian tersebut, penelitian ini mengevaluasi \textit{weight-only post-training quantization} INT4 pada model IndoBERT untuk tugas \textit{extractive question answering} berbahasa Indonesia menggunakan \textit{dataset} SQuAD-id. Kinerja diukur dengan EM dan F1, efisiensi diukur dengan ukuran model dan latensi inferensi, dan model pembanding adalah model FP16. Perbedaan EM dan F1 antara konfigurasi \textit{per-tensor}, \textit{per-channel}, dan \textit{baseline} diuji signifikansinya secara statistik. Hasilnya diharapkan memperlihatkan besar selisih EM dan F1 antara kedua granularitas dibandingkan jumlah skala yang disimpan, yaitu 75 untuk \textit{per-tensor} dan 133.458 untuk \textit{per-channel}. Penelitian ini berjudul \textit{Weight-Only Post-Training Quantization untuk Extractive Question Answering Bahasa Indonesia}.
+
+\section{Rumusan Masalah}
+
+Berdasarkan uraian pada latar belakang, penelitian ini diarahkan pada tiga pertanyaan utama, yaitu prosedur penerapan \textit{weight-only post-training quantization}, besarnya perubahan kinerja dan efisiensi yang dihasilkan, serta signifikansi statistik dari perbedaan tersebut. Pertanyaan pertama dijawab melalui prosedur yang dirinci pada Bab III, sedangkan pertanyaan kedua dan ketiga dijawab melalui eksperimen dengan metrik dan uji statistik. Dengan demikian, penelitian ini merumuskan tiga permasalahan.
+\begin{enumerate}
+    \item Bagaimana menerapkan \textit{weight-only post-training quantization} INT4 dengan granularitas \textit{per-tensor} dan \textit{per-channel} pada model IndoBERT untuk tugas \textit{extractive question answering} bahasa Indonesia?
+    \item Seberapa besar perubahan EM, F1, ukuran model, dan latensi inferensi pada model terkuantisasi \textit{per-tensor} dan \textit{per-channel} dibandingkan model FP16 pada \textit{dataset} SQuAD-id?
+    \item Apakah perbedaan EM dan F1 antarkonfigurasi signifikan secara statistik?
+\end{enumerate}
+
+\section{Tujuan Penelitian}
+
+Berdasarkan rumusan masalah tersebut, penelitian ini memiliki tiga tujuan.
+\begin{enumerate}
+    \item Menerapkan \textit{weight-only post-training quantization} INT4 dengan granularitas \textit{per-tensor} dan \textit{per-channel} pada model IndoBERT untuk tugas \textit{extractive question answering} bahasa Indonesia.
+    \item Mengukur perubahan EM, F1, ukuran model, dan latensi inferensi pada model terkuantisasi dibandingkan model FP16 pada \textit{dataset} SQuAD-id.
+    \item Menguji signifikansi statistik perbedaan EM dan F1 antarkonfigurasi.
+\end{enumerate}
+
+\section{Manfaat Penelitian}
+
+Manfaat penelitian terbagi menjadi manfaat teoretis (Subbab 1.4.1) dan manfaat praktis (Subbab 1.4.2).
+
+\subsection{Manfaat Teoretis}
+
+Secara teoretis, penelitian ini diharapkan:
+\begin{enumerate}
+    \item Memperkaya kajian \textit{weight-only post-training quantization} INT4 pada model \textit{encoder} berbahasa Indonesia untuk tugas \textit{extractive question answering}. Penelitian sebelumnya melaporkan IndoBERT pada tujuh tugas IndoNLU \parencite{abdurrahman2023implementing}. Kuantisasi pada \textit{question answering} dengan SQuAD-id baru dilaporkan untuk model bahasa besar \textit{decoder-only} \parencite{ramaputra2026evaluating}.
+    \item Menyediakan data pembanding antara granularitas \textit{per-tensor} dan \textit{per-channel} pada model, \textit{dataset}, dan presisi yang sama.
+    \item Memberikan data empiris mengenai pertukaran antara kinerja (EM dan F1) dan ukuran model pada kuantisasi INT4, termasuk selisih antara ukuran teoretis (hasil hitungan dari jumlah bit per parameter) dan ukuran berkas (ukuran riil pada penyimpanan).
+    \item Menunjukkan konsistensi arah selisih kinerja antarkonfigurasi pada tiga nilai \textit{seed}, disertai uji signifikansi berpasangan dan koreksi perbandingan berganda.
+\end{enumerate}
+
+\subsection{Manfaat Praktis}
+
+Secara praktis, penelitian ini diharapkan:
+\begin{enumerate}
+    \item Menjadi bahan pertimbangan bagi pengembang sistem \textit{question answering} berbahasa Indonesia dalam memilih konfigurasi kuantisasi bobot IndoBERT berdasarkan perubahan EM, F1, dan ukuran model.
+    \item Menjadi bahan pembanding bagi peneliti selanjutnya untuk pengembangan skema kuantisasi lain, misalnya granularitas \textit{per-group}, kuantisasi bobot dan aktivasi sekaligus, atau \textit{quantization-aware training}.
+    \item Memberikan gambaran kuantitatif penghematan ruang penyimpanan bagi institusi yang mempertimbangkan penerapan model bahasa pada infrastruktur dengan ruang penyimpanan terbatas.
+\end{enumerate}
+
+\section{Batasan Masalah}
+
+Batasan masalah dalam penelitian ini terdiri atas sepuluh butir.
+\begin{enumerate}
+    \item Model yang digunakan adalah IndoBERT-base fase 2 \parencite{wilie2020indonlu}, yaitu model bahasa pralatih umum yang tidak dikhususkan untuk tugas \textit{question answering}. Penyesuaian ke tugas \textit{extractive question answering} dilakukan melalui \textit{fine-tuning} pada penelitian ini, dan tidak ada model dasar lain yang dibandingkan.
+    \item \textit{Dataset} yang digunakan adalah SQuAD-id \parencite{muis2020sequence}, yaitu terjemahan mesin SQuAD v2.0 ke bahasa Indonesia, dalam versi yang didistribusikan SEACrowd \parencite{lovenia2024seacrowd}. Setiap baris berisi satu pasangan pertanyaan dan konteks. Kolom yang dipakai adalah konteks, pertanyaan, jawaban (teks dan posisi awal hasil perbaikan), dan judul artikel untuk pembagian data. Data validasi dibentuk dari sebagian data latih.
+    \item Sampel yang tidak diikutsertakan terdiri atas dua jenis, yaitu pertanyaan tanpa jawaban pada konteks (bagian dari rancangan SQuAD v2.0) dan pertanyaan terjawab yang jawabannya tidak dapat dilacak pada konteks (galat \textit{dataset}). Metrik hanya dihitung pada sampel yang memiliki jawaban, sehingga penelitian ini tidak mengukur kemampuan model memutuskan bahwa suatu pertanyaan tidak dapat dijawab. Jumlah setiap jenis disajikan pada Subbab 3.2.4.
+    \item Mutu terjemahan mesin tidak dinilai melalui evaluasi manusia (\textit{human evaluation}) pada penelitian ini. Oleh karena itu, hasil penelitian tidak dapat digeneralisasi ke \textit{dataset} berbahasa Indonesia yang ditulis langsung oleh penutur jati.
+    \item Kuantisasi yang diterapkan adalah \textit{weight-only post-training quantization} pada bobot model hasil \textit{fine-tuning}, tanpa pelatihan ulang dan tanpa kuantisasi aktivasi. Kuantisasi bersifat tersimulasi, yaitu bobot dikembalikan ke presisi \textit{floating point} sebelum komputasi, sehingga penelitian ini tidak mengklaim percepatan inferensi. Model pembanding adalah model FP16.
+    \item Kuantisasi diterapkan pada matriks bobot lapisan linear dan \textit{embedding}. Kepala jawaban, \textit{bias}, dan normalisasi lapisan tetap pada presisi asal.
+    \item Presisi numerik dibatasi pada INT4, sehingga perbandingan antargranularitas dilakukan pada jumlah bit yang sama.
+    \item Granularitas dibatasi pada \textit{per-tensor} (satu skala untuk setiap \textit{tensor}) dan \textit{per-channel} (satu skala untuk setiap baris keluaran). Jumlah \textit{tensor} dan skala disajikan pada Subbab 3.2.6.
+    \item Kinerja diukur dengan EM dan F1, sedangkan efisiensi diukur dengan ukuran model dan latensi inferensi. Hanya EM dan F1 yang diuji signifikansinya secara statistik, sedangkan latensi dilaporkan secara deskriptif.
+    \item Eksperimen dijalankan pada satu jenis \textit{graphics processing unit} (GPU), yaitu NVIDIA Tesla T4, dengan tiga nilai \textit{seed}. Penelitian ini tidak menerapkan \textit{quantization-aware training}, tidak mengembangkan \textit{kernel} khusus untuk presisi rendah, dan tidak menguji model pada perangkat dengan sumber daya terbatas.
+\end{enumerate}

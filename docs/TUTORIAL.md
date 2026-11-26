@@ -745,7 +745,9 @@ memilih **seluruh bab** atau **section tertentu**. Di akhir, menu menanyakan
 |---|---|
 | `cover`, `logo`, `title`, `approval`, `endorsement`, `statement` | halaman awal (sampul, logo, judul, persetujuan, pengesahan, pernyataan) |
 | `ringkasan`, `summary`, `forewords` | Ringkasan (ID), Summary (EN), Kata Pengantar |
+| `daftarisi`, `daftartabel`, `daftargambar`, `daftarrumus` | Daftar Isi, Daftar Tabel, Daftar Gambar, Daftar Rumus (hanya PDF) |
 | `bab1` … `bab5` | Bab I … V (utuh), atau `babN[a,b]` untuk section tertentu |
+| `pustaka` | Daftar Rujukan |
 | `lamp1`, `lamp2` | Lampiran 1, Lampiran 2 |
 | `bio` | Riwayat Hidup |
 
