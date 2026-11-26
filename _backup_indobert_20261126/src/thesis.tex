@@ -1,0 +1,90 @@
+%--------------------------------------------------------------------%
+%
+% Berkas utama templat Skripsi Universitas Negeri Malang.
+%
+% Diadaptasi dari templat Tesis IF-ITB (Petra Barus, Peb Ruswono Aryan)
+% mengikuti Pedoman Penulisan Karya Ilmiah UM Edisi 2017.
+%
+%--------------------------------------------------------------------%
+
+\documentclass[12pt, a4paper, onecolumn, oneside, final]{report}
+
+\input{config/if-itb-thesis.sty}
+\input{config/informations}
+
+\bibliography{references}
+
+\begin{document}
+
+    \title{\judul}
+    \author{\penulis}
+    \date{}
+
+    %----------------------------------------------------------------%
+    % Bagian awal — nomor halaman romawi, tengah bawah.
+    %----------------------------------------------------------------%
+    \pagenumbering{roman}
+    \setcounter{page}{1}
+
+    % Halaman sampul, lambang, dan halaman judul tidak bernomor dan tidak
+    % dihitung, sehingga Lembar Persetujuan menjadi halaman i.
+    \input{chapters/cover}
+    \input{chapters/logo}
+    \input{chapters/title-page}
+
+    \setcounter{page}{1}
+    \pagestyle{plain}
+
+    \input{chapters/approval}      % Lembar Persetujuan Pembimbing
+    \input{chapters/endorsement}   % Lembar Persetujuan dan Pengesahan
+    \input{chapters/statement}     % Pernyataan Keaslian Tulisan
+
+    \input{chapters/abstract-id}   % Ringkasan
+    \input{chapters/abstract-en}   % Summary
+    \input{chapters/forewords}     % Kata Pengantar
+
+    \tableofcontents
+    \listoftables
+    \listoffigures
+    \listofrumus                   % Daftar Rumus
+
+    %----------------------------------------------------------------%
+    % Bagian inti — nomor halaman arabic; kanan atas, awal bab tengah bawah.
+    %----------------------------------------------------------------%
+    \clearpage                     % halaman terakhir bagian awal tetap romawi
+    \pagestyle{fancy}
+    \pagenumbering{arabic}
+    \setcounter{page}{1}
+
+    \input{chapters/chapter-1}
+    \input{chapters/chapter-2}
+    \input{chapters/chapter-3}
+    \input{chapters/chapter-4}
+    \input{chapters/chapter-5}
+
+    % Daftar Rujukan (gaya APA). heading=bibintoc membuat judul sekaligus
+    % entri Daftar Isi pada halaman pertama daftar rujukan.
+    {\setlength{\emergencystretch}{2em}\printbibliography[heading=bibintoc, title={DAFTAR RUJUKAN}]}
+
+    %----------------------------------------------------------------%
+    % Lampiran — label "Lampiran <angka>".
+    %----------------------------------------------------------------%
+    \appendix
+    \renewcommand{\thechapter}{\arabic{chapter}}
+    % Entri Daftar Isi untuk lampiran: "Lampiran 1", bukan "BAB I".
+    \renewcommand{\tocchapapp}{Lampiran}
+    \renewcommand{\tocchapnum}{\arabic{chapter}}
+    \titleformat{\chapter}[display]
+      {\normalsize\bfseries\centering}
+      {Lampiran\ \thechapter}{0pt}
+      {\MakeUppercase}
+
+    % Entri "LAMPIRAN" dihapus: sebelumnya menunjuk halaman terakhir Daftar
+    % Rujukan, sedangkan Lampiran 1 dan 2 sudah punya entri sendiri.
+
+    \input{chapters/appendix-1}
+    \input{chapters/appendix-2}
+
+    \input{chapters/biography}     % Riwayat Hidup
+
+\end{document}

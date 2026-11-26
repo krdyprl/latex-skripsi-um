@@ -1,42 +1,55 @@
 %--------------------------------------------------------------------%
 %
 % Lembar Persetujuan dan Pengesahan (Pedoman UM Lampiran 5a)
-% Sesuaikan nama dewan penguji, dekan, dan ketua jurusan.
+%
+% Nama dewan penguji dan pejabat penanda tangan diambil dari
+% config/informations.tex.
 %
 %--------------------------------------------------------------------%
 
 \clearpage
-\thispagestyle{empty}
 
-Skripsi oleh \penulis\ ini telah dipertahankan di depan dewan penguji pada tanggal \underline{\hspace{4cm}}.
+\begin{center}
+    \bfseries LEMBAR PERSETUJUAN DAN PENGESAHAN SKRIPSI
+\end{center}
 
-\vspace{2\baselineskip}
+\phantomsection
+\addcontentsline{toc}{chapter}{LEMBAR PERSETUJUAN DAN PENGESAHAN SKRIPSI}
+
+\vspace{\baselineskip}
+
+\noindent Skripsi oleh \MakeUppercase{\penulis} ini telah dipertahankan di depan dewan penguji pada tanggal \tanggalSidang.
+
+\vspace{\baselineskip}
 
 \noindent Dewan Penguji
 
-\vspace{3\baselineskip}
-\noindent \underline{\hspace{6cm}}, Ketua \\
-Nama dan Gelar Ketua Penguji
+\vspace{\baselineskip}
 
-\vspace{3\baselineskip}
-\noindent \underline{\hspace{6cm}}, Anggota \\
-Nama dan Gelar Anggota I
+% Satu baris penguji: nama (atau garis kosong) lalu NIP (atau garis kosong).
+\newcommand*{\pengujiBaris}[2]{%
+  \ifx#1\empty\underline{\strut\hspace{6.5cm}}\else#1\fi\\[0.15cm]
+  \ifx#2\empty NIP~\underline{\strut\hspace{4.5cm}}\else#2\fi}
 
-\vspace{3\baselineskip}
-\noindent \underline{\hspace{6cm}}, Anggota \\
-Nama dan Gelar Anggota II
+\noindent
+\pengujiBaris{\pengujiSatu}{\nipPengujiSatu}
+
+\vspace{0.8cm}
+\noindent
+\pengujiBaris{\pengujiDua}{\nipPengujiDua}
+
+\vspace{0.8cm}
+\noindent
+\pengujiBaris{\pengujiTiga}{\nipPengujiTiga}
 
 \vspace{2\baselineskip}
 
 \noindent
-\begin{tabular}{@{}p{0.5\textwidth}p{0.5\textwidth}@{}}
+\begin{tabular}{@{}p{0.48\textwidth}p{0.48\textwidth}@{}}
 Mengesahkan, & Mengetahui, \\
-Dekan \fakultas & Ketua \departemen \\%
- & \\
- & \\
- & \\
-Nama dan Gelar Dekan & Nama dan Gelar Ketua Jurusan \\
-NIP 123456789 & NIP 123456789 \\
+Dekan \fakultas, & Ketua Departemen \departemen, \\[2cm]
+\dekan & \ketuaDepartemen \\
+\nipDekan & \nipKetuaDepartemen
 \end{tabular}
 
 \clearpage

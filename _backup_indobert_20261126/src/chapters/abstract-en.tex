@@ -1,0 +1,31 @@
+%--------------------------------------------------------------------%
+%
+% Summary (Pedoman UM Lampiran 7 — versi Bahasa Inggris dari Ringkasan)
+% Spasi tunggal, maksimal 750 kata.
+%
+%--------------------------------------------------------------------%
+
+\clearpage
+\addcontentsline{toc}{chapter}{SUMMARY}
+
+\begin{center}
+    \bfseries SUMMARY
+\end{center}
+
+\begin{singlespace}
+
+\noindent \penulis. \bulantahun. \textit{Weight-Only Post-Training Quantization for Indonesian Extractive Question Answering}. Thesis, \departemen, \fakultas, State University of Malang. Advisors: (I) \pembimbingSatu\ifx\pembimbingDua\empty\else, (II) \pembimbingDua\fi
+
+\vspace{0.5\baselineskip}
+\noindent \textbf{Keywords:} \katakunciEn%
+
+\vspace{\baselineskip}
+
+Large pre-trained language models have become the primary choice for Indonesian natural language processing tasks, including extractive question answering. Their size limits deployment on memory-constrained devices, so a compression technique that does not require retraining is needed. Weight-only INT4 post-training quantization promises up to fourfold storage reduction relative to FP16, but the resulting performance loss depends on the granularity of the quantization scale. For Indonesian extractive question answering, the effect of that granularity has not been tested systematically with significance testing.
+
+This study evaluates the effect of INT4 weight-only quantization granularity on the performance and efficiency of the IndoBERT-base phase 2 model on the SQuAD-id dataset. The data were filtered into 70,051 training rows, 5,997 validation rows, and 5,244 test rows. The model was fine-tuned in FP32 precision with three seeds, and its weights were then copied into three configurations, namely the FP16 baseline, per-tensor quantization, and per-channel quantization. Performance was measured with Exact Match and F1, while efficiency was measured through model file size and inference latency. Performance differences were tested with the McNemar test for EM and a paired bootstrap of 10,000 resamples for F1, with Holm correction applied to three paired comparisons.
+
+The results show [mean EM and F1 of the three configurations together with their differences from the baseline, the actual file sizes and their ratios to FP16, and the Holm-corrected $p$ values]. These findings describe the trade-off between storage savings and performance loss, and can serve as a basis for choosing quantization granularity when deploying IndoBERT on resource-constrained devices. The contribution of this study is empirical evidence on the effect of weight-only quantization granularity for Indonesian extractive question answering, together with an evaluation procedure that accounts for variation across seeds and for multiple-comparison correction.
+
+\end{singlespace}
+\clearpage

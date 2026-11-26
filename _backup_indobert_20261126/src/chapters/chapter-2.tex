@@ -1,0 +1,402 @@
+%--------------------------------------------------------------------%
+%
+% Bab II — Kajian Pustaka
+%
+% @author Petra Novandi, disesuaikan untuk penelitian kuantisasi
+%
+%--------------------------------------------------------------------%
+
+\chapter{Kajian Pustaka}
+
+\section{Tugas \textit{Extractive Question Answering}}
+
+\textit{Question answering} adalah tugas pengolahan bahasa alami yang meminta sistem menjawab pertanyaan berdasarkan informasi yang tersedia \parencite{jurafsky2025speech}. Tugas ini termasuk dalam \textit{machine reading comprehension}, yaitu menjawab pertanyaan berdasarkan teks tertentu, dan dapat dipandang sebagai masalah pembelajaran terbimbing dengan masukan berupa konteks dan pertanyaan dalam bahasa alami \parencite{wang2022extractive}. Pada pendekatan \textit{extractive} (disebut juga \textit{span prediction}), jawaban tidak dihasilkan dari awal, melainkan dipilih sebagai rentang teks (\textit{span}) di dalam konteks \parencite{jurafsky2025speech, wang2022extractive}. Penelitian ini memakai bentuk \textit{single-span}, yaitu hanya satu rentang yang dipilih sebagai jawaban.
+
+Pada bentuk \textit{single-span}, model memilih satu urutan \textit{token} yang berurutan dari konteks sebagai jawaban atas pertanyaan \parencite{wang2022extractive}. Masukan tugas ini berupa pasangan pertanyaan dan konteks, sedangkan keluarannya berupa posisi \textit{token} awal dan posisi \textit{token} akhir \textit{span} jawaban \parencite{devlin2019bert}. Dengan formulasi tersebut, \textit{extractive question answering} dapat dipandang sebagai dua klasifikasi posisi pada urutan \textit{token} konteks, sehingga kualitas jawaban dapat dibandingkan langsung dengan jawaban acuan melalui kecocokan teks dan \textit{token overlap}. Perbandingan ini memakai \textit{Exact Match} (EM), yaitu proporsi jawaban yang persis sama dengan jawaban acuan, dan F1, yaitu ukuran \textit{token overlap} antara jawaban prediksi dan jawaban acuan \parencite{rajpurkar2016squad}.
+
+Model \textit{extractive question answering} tersusun dari empat komponen, yaitu \textit{embedding}, ekstraksi fitur, interaksi antara konteks dan pertanyaan, serta prediksi jawaban \parencite{wang2022extractive}. Ekstraksi fitur memakai jaringan saraf berulang (\textit{recurrent neural network}), jaringan saraf konvolusional (\textit{convolutional neural network}), atau struktur \textit{Transformer} berbasis \textit{multi-head self-attention}, sedangkan model bahasa pralatih seperti BERT dipasangkan dengan \textit{pointer head} untuk menentukan rentang jawaban \parencite{wang2022extractive}. Pada BERT, \textit{fine-tuning} ke tugas ini hanya menambahkan satu lapisan keluaran \parencite{raikwar2024five}. Model yang mampu memodelkan hubungan antara pertanyaan dan konteks diperlukan untuk menentukan kedua posisi tersebut, sehingga pembahasan dilanjutkan pada arsitektur \textit{Transformer}.
+
+SQuAD (\textit{Stanford Question Answering Dataset}) diperkenalkan pada 2016 dan berperan penting dalam pelatihan dan evaluasi model \textit{machine comprehension} \parencite{rajpurkar2016squad, raikwar2024five}. Versi 2.0 memuat pertanyaan yang tidak memiliki jawaban pada konteks \parencite{rajpurkar2018squad}, dan pertanyaan semacam itu juga dicatat sebagai salah satu masalah pada \textit{dataset} \textit{single-span} \parencite{wang2022extractive}. Penelitian ini hanya memakai pertanyaan yang memiliki jawaban, karena kemampuan model memutuskan bahwa suatu pertanyaan tidak dapat dijawab tidak termasuk yang diuji (Subbab 1.5).
+
+Pada bahasa Inggris, tugas ini telah dikaji dengan membandingkan lima model berbasis BERT yang di-\textit{fine-tune} pada SQuAD \parencite{raikwar2024five}. Pada bahasa Indonesia, \textit{extractive question answering} dievaluasi pada SQuAD-id \parencite{muis2020sequence, ramaputra2026evaluating, suhendra2026matrik} dan pada FacQA, yaitu tugas \textit{span extraction} berita di dalam \textit{benchmark} IndoNLU \parencite{wilie2020indonlu}. Penelitian ini memakai SQuAD-id, yang dijelaskan pada Subbab 2.3.
+
+\section{Model Bahasa Pralatih BERT dan IndoBERT}
+
+\subsection{Arsitektur dan Cara Kerja BERT}
+
+\textit{Transformer} adalah arsitektur yang memproses urutan \textit{token} dengan mekanisme \textit{attention} tanpa rekurensi \parencite{vaswani2017attention}. Setiap lapisan memakai matriks proyeksi \textit{query}, \textit{key}, \textit{value}, dan keluaran, diikuti lapisan \textit{feed-forward}. Matriks-matriks inilah, bersama \textit{embedding}, yang menjadi bobot yang dikuantisasi pada penelitian ini.
+
+BERT (\textit{Bidirectional Encoder Representations from Transformers}) adalah model bahasa yang dibangun dari tumpukan \textit{encoder} \textit{Transformer} dan dipralatih pada korpus teks tanpa label melalui dua tugas, yaitu \textit{masked language modeling} (MLM) dan \textit{next sentence prediction} (NSP) \parencite{devlin2019bert}. Pada MLM, 15\% \textit{token} dipilih secara acak sebagai target prediksi dan, pada 80\% di antaranya, diganti dengan \textit{token} khusus \textit{[MASK]}, lalu model memprediksi \textit{token} target dengan memanfaatkan konteks di kiri dan kanan sekaligus, sehingga representasinya bersifat dua arah (\textit{bidirectional}). Pada NSP, model menerima sepasang kalimat dan menentukan apakah kalimat kedua merupakan kelanjutan dari kalimat pertama atau diambil secara acak dari korpus. Kombinasi kedua tugas ini membuat BERT memperoleh pengetahuan bahasa umum yang kemudian diadaptasi ke tugas spesifik melalui \textit{fine-tuning} \parencite{devlin2019bert}.
+
+Teks masukan terlebih dahulu ditokenisasi dengan \textit{WordPiece}, yaitu metode yang memecah kata jarang menjadi potongan subkata (\textit{subword}) \parencite{devlin2019bert}. Tokenisasi menambahkan \textit{token} khusus \textit{[CLS]} di awal urutan dan \textit{[SEP]} sebagai pemisah antarsegmen, serta menghasilkan tiga keluaran, yaitu \textit{input\_ids} (representasi numerik \textit{token}), \textit{attention\_mask} (penanda \textit{token} asli terhadap \textit{padding}), dan \textit{token\_type\_ids} (penanda segmen). Setiap \textit{token} dipetakan ke tiga \textit{embedding}, yaitu \textit{embedding} \textit{token}, segmen, dan posisi, yang dijumlahkan sebelum masuk ke lapisan \textit{encoder} \parencite{devlin2019bert}. Pada setiap lapisan \textit{encoder}, mekanisme \textit{self-attention} memungkinkan sebuah \textit{token} berinteraksi dengan \textit{token} lain dalam urutan yang sama, termasuk yang posisinya berjauhan, sehingga setiap \textit{token} memperoleh representasi kontekstual \parencite{vaswani2017attention}.
+
+Penyesuaian ke tugas \textit{extractive question answering} dilakukan melalui \textit{fine-tuning}. Pertanyaan dan konteks digabung menjadi satu urutan masukan yang dipisahkan oleh \textit{[SEP]}, lalu satu lapisan linear menghasilkan skor posisi awal dan posisi akhir untuk setiap \textit{token}, dan \textit{span} dengan jumlah skor awal dan akhir tertinggi dipilih sebagai jawaban \parencite{devlin2019bert}. Lapisan tambahan ini hanya berukuran $768 \times 2$, yaitu 1.536 bobot, sehingga ukuran model hasil \textit{fine-tuning} ditentukan oleh \textit{encoder} dan \textit{embedding}, dan ukuran itu menentukan kebutuhan penyimpanan. Karena itu, kompresi model dibahas pada Subbab 2.4.
+
+\subsection{Model IndoBERT-base yang Digunakan}
+
+IndoBERT adalah model bahasa pralatih berbahasa Indonesia berarsitektur BERT yang disediakan sebagai bagian dari \textit{benchmark} IndoNLU dan dipralatih pada korpus Indo4B \parencite{wilie2020indonlu}. Model yang digunakan pada penelitian ini adalah IndoBERT-base fase 2. Konfigurasinya terdiri atas 12 lapisan \textit{encoder}, ukuran \textit{hidden} 768, 12 \textit{head} perhatian, ukuran lapisan \textit{feed-forward} 3.072, kosakata 50.000 \textit{token}, dan panjang urutan maksimum 512 \textit{token}. Model untuk tugas \textit{question answering} tidak memakai lapisan \textit{pooler}, sehingga jumlah parameternya 123.852.290 berdasarkan penghitungan pada model yang digunakan. Dengan lapisan \textit{pooler}, jumlahnya menjadi 124.442.882.
+
+Nama model yang dipakai dinyatakan secara eksplisit pada Subbab 3.2.5 karena kinerja pada SQuAD-id berbeda antarmodel berbahasa Indonesia. Pada SQuAD-id, \textcite{suhendra2026matrik} melaporkan F1 sebesar 63,59 untuk model \texttt{indobert-base-p1}. Untuk model \texttt{indolem/indobert-base-uncased}, F1 yang dilaporkan adalah 71,58. IndoBERT-base dipralatih dalam dua fase. Fase 1 memakai panjang urutan maksimum 128 \textit{token}, dan fase 2 melanjutkan pralatih dengan panjang urutan maksimum 512 \textit{token} \parencite{wilie2020indonlu}. Penelitian ini memakai fase 2 (\texttt{indobert-base-p2}) karena konteks SQuAD-id diproses dalam jendela hingga 384 \textit{token} (Bab III), lebih panjang daripada 128 \textit{token} pada fase 1. Pada FacQA, skor IndoBERT-base naik dari 53,45 pada fase 1 menjadi 57,06 pada fase 2 \parencite{wilie2020indonlu}.
+
+\section{Karakteristik \textit{Dataset} SQuAD-id}
+
+SQuAD-id adalah \textit{dataset} \textit{extractive question answering} berbahasa Indonesia yang dibentuk dari terjemahan mesin SQuAD v2.0 ke bahasa Indonesia oleh \textcite{muis2020sequence} untuk penelitian pembangkit pertanyaan otomatis. Setiap baris memuat satu pasangan pertanyaan dan konteks dengan kolom konteks, pertanyaan, jawaban (teks dan posisi awal), judul artikel, dan penanda pertanyaan tanpa jawaban. \textit{Dataset} asalnya, SQuAD, memuat jawaban berupa \textit{span} teks dari paragraf Wikipedia \parencite{rajpurkar2016squad}.
+
+Berkas yang dipakai hanya menyediakan data latih dan data uji tanpa data validasi, sehingga data validasi dibentuk dari data latih pada tahap praproses (Subbab 3.2.3). Jumlah data dan panjang teks dirangkum pada Tabel~\ref{tab:karakteristik-dataset}. Tabel tersebut dipakai untuk menunjukkan jumlah baris yang tidak dapat dipakai, baik karena pertanyaannya tidak memiliki jawaban maupun karena teks jawabannya tidak dapat dilacak pada konteks.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Karakteristik \textit{dataset} SQuAD-id}
+  \label{tab:karakteristik-dataset}
+  \begin{tabularx}{\textwidth}{@{}Xrr@{}}
+    \hline
+    \textbf{Karakteristik} & \textbf{Data latih} & \textbf{Data uji} \\
+    \hline
+    Jumlah baris & 130.319 & 11.873 \\
+    Artikel unik & 441 & 35 \\
+    Konteks unik & 19.029 & 1.204 \\
+    Pertanyaan tanpa jawaban & 43.498 (33,38\%) & 5.945 (50,07\%) \\
+    Pertanyaan terjawab & 86.821 & 5.928 \\
+    Jawaban tidak terlacak pada konteks setelah perbaikan & 16.705 & 676 \\
+    Duplikat konteks dan pertanyaan & 65 & 8 \\
+    Baris yang dipakai pada penelitian ini & 70.051 (53,75\%) & 5.244 (44,17\%) \\
+    Median panjang konteks (kata) & 98 & 101 \\
+    Median panjang pertanyaan (kata) & 8 & 8 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Dua batasan \textit{dataset} perlu dicatat. Pertama, SQuAD-id berasal dari terjemahan mesin, sehingga dapat membawa pengaruh proses terjemahan pada kelancaran kalimat dan ketepatan istilah. Kedua, hasil pada satu \textit{dataset} hasil terjemahan tidak dapat langsung digeneralisasi ke domain atau sumber teks lain.
+
+\section{Teknik Kompresi Model}
+
+Kompresi model mencakup tiga kelompok teknik untuk mengurangi kebutuhan sumber daya, yaitu \textit{pruning}, \textit{knowledge distillation}, dan kuantisasi \parencite{gholami2021survey, han2016deep, hinton2015distilling}.
+
+\textit{Pruning} menghapus bobot atau koneksi yang kontribusinya kecil terhadap keluaran model \parencite{han2016deep}. Struktur bobot yang dihasilkan tidak beraturan, sehingga penghematan waktu komputasi bergantung pada dukungan perangkat keras terhadap operasi \textit{sparse}, dan model perlu dilatih ulang untuk memulihkan akurasi \parencite{han2016deep}.
+
+\textit{Knowledge distillation} melatih model berukuran lebih kecil (\textit{student}) agar meniru distribusi keluaran model besar (\textit{teacher}) \parencite{hinton2015distilling}. Teknik ini menghasilkan model baru dengan arsitektur berbeda, bukan versi terkompresi dari model yang sudah ada, sehingga memerlukan proses pelatihan penuh.
+
+Kuantisasi menurunkan presisi representasi numerik bobot atau aktivasi \parencite{gholami2021survey}. Berbeda dengan dua teknik sebelumnya, kuantisasi tidak mengubah arsitektur maupun jumlah parameter dan dapat diterapkan pada model yang telah selesai dilatih tanpa pelatihan ulang \parencite{gholami2021survey}. Bobot hasil \textit{fine-tuning} tetap dapat dipertahankan sebagai acuan, dan \textit{error} yang muncul dapat dikendalikan melalui pilihan cakupan dan granularitas.
+
+Besarnya pengurangan ukuran dapat dihitung langsung dari jumlah parameter. Model dengan 123.852.290 parameter berukuran 495,4 MB pada format \textit{floating point} 32 bit (FP32), 247,7 MB pada \textit{floating point} 16 bit (FP16), 123,9 MB pada bilangan bulat 8 bit (INT8), dan 61,9 MB pada bilangan bulat 4 bit (INT4) apabila setiap parameter menempati 4, 2, 1, dan 0,5 byte. Angka tersebut adalah ukuran teoretis, dan 1 MB pada penelitian ini sama dengan $10^{6}$ byte.
+
+Hasil kuantisasi 4-bit pada model \textit{encoder} dan model bahasa besar dilaporkan sebagai berikut. Pada BERT-Large untuk SQuAD v1.1, kuantisasi bobot 4-bit mengubah F1 dari 93,15 menjadi 93,17 \parencite{zadeh2022mokey}. Pada IndoBERT, kuantisasi pascapelatihan 4-bit menurunkan F1 rata-rata tujuh tugas dari 77,35 menjadi 72,78 \parencite{abdurrahman2023implementing}. Pada SQuAD-id dengan model bahasa besar, EM Qwen2.5-14B 4-bit turun dari 48,61 menjadi 44,73 (AWQ) dan 43,80 (GPTQ), sedangkan EM Qwen2.5-7B 4-bit berubah dari 42,05 menjadi 42,15 (AWQ) dan 42,34 (GPTQ) \parencite{ramaputra2026evaluating}. Perubahan F1 berkisar dari naik 0,02 poin hingga turun 4,57 poin, dan perubahan EM dari naik 0,29 poin hingga turun 4,81 poin, sehingga dampak kuantisasi perlu diukur pada model dan tugas yang spesifik, termasuk \textit{extractive question answering} berbahasa Indonesia.
+
+\section{Konsep dan Skema Kuantisasi pada Jaringan Saraf Tiruan}
+
+Dalam jaringan saraf, kuantisasi diterapkan pada \textit{tensor} bobot dan aktivasi yang tersimpan dalam format \textit{floating point}. Proses ini beroperasi dua arah: kuantisasi memetakan nilai riil ke bilangan bulat berpresisi rendah, sedangkan \textit{dequantization} mengembalikan nilai tersebut ke bentuk riil untuk komputasi. Ruang desain kuantisasi ditunjukkan pada Gambar~\ref{fig:alur-kuantisasi} dalam tujuh tahapan, yaitu representasi numerik awal, skema pemetaan simetris atau asimetris, cakupan bobot dan aktivasi, waktu penerapan, granularitas, representasi memori \textit{bit-packing}, serta \textit{dequantization} dan rekonstruksi inferensi. Subbab 2.5.1 sampai 2.5.7 membahas tahapan tersebut, dengan \textit{dequantization} dijelaskan pada Subbab 2.5.2 dan 2.5.7.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.90\textwidth]{"resources/alur kuantisasi.png"}
+  \caption{Tahapan dan ruang desain kuantisasi pada jaringan saraf}
+  \label{fig:alur-kuantisasi}
+\end{figure}
+
+\subsection{Format Representasi Numerik FP16, INT8, dan INT4}
+
+Presisi numerik menunjukkan jumlah bit untuk menyimpan setiap nilai. Format \textit{floating point} seperti FP32 dan FP16 memisahkan bit menjadi tanda, eksponen, dan mantisa, sehingga mampu mewakili rentang nilai hingga $\pm 3{,}4 \times 10^{38}$ pada FP32 (Tabel~\ref{tab:format-numerik}). Format bilangan bulat seperti INT8 dan INT4 hanya menyimpan nilai diskret dengan rentang tetap dan memerlukan faktor skala untuk memetakan nilai riil \parencite{gholami2021survey}. INT8 menyediakan 256 tingkat nilai dan INT4 hanya 16 tingkat, sehingga pada rentang bobot yang sama, langkah kuantisasi INT4 lebih lebar daripada INT8 dan \textit{error} pembulatannya lebih besar \parencite{gholami2021survey}. Susunan bit dan rentang nilai keempat format dirangkum pada Tabel~\ref{tab:format-numerik}. Bilangan bulat bertanda disimpan dalam bentuk komplemen dua, dan pada kuantisasi simetris yang dipakai penelitian ini INT4 hanya memakai $-7$ sampai 7 (15 tingkat nilai) dengan nilai $-8$ tidak dipakai (Subbab 2.5.3). Pembagian bit FP16, INT8, dan INT4 ditunjukkan pada Gambar~\ref{fig:layout-fp16} sampai Gambar~\ref{fig:layout-int4}.
+
+Pada format \textit{floating point}, satu nilai disusun dari tiga bagian. Bit tanda menyimpan apakah nilai positif (0) atau negatif (1). Bit eksponen menyimpan pangkat dua yang menggeser titik desimal, sehingga menentukan seberapa besar atau kecil nilai yang dapat diwakili. Bit mantisa menyimpan digit pecahan di belakang angka 1 awal, sehingga menentukan ketelitian nilai. Pada FP16 terdapat 1 bit tanda, 5 bit eksponen, dan 10 bit mantisa, dan nilai bilangan normalnya dihitung dengan $(-1)^{s} \times 2^{e-15} \times (1 + m/1024)$, dengan $s$ bit tanda, $e$ nilai eksponen, $m$ nilai mantisa, dan 15 bias eksponen.
+
+Sebagai contoh, bobot 0,30 ditulis pada FP16 sebagai $1{,}2 \times 2^{-2}$. Eksponen $-2$ disimpan sebagai $-2 + 15 = 13$, yaitu \texttt{01101} dalam biner. Pecahan 0,2 disimpan sebagai $0{,}2 \times 1024 \approx 205$, yaitu \texttt{0011001101} dalam biner. Dengan bit tanda 0, susunan bitnya adalah \texttt{0 01101 0011001101}, yang dibaca kembali sebagai $2^{-2} \times (1 + 205/1024) \approx 0{,}30005$. Selisih 0,00005 terhadap nilai asli muncul karena mantisa hanya 10 bit.
+
+Format bilangan bulat tidak memiliki bit eksponen dan bit mantisa. Seluruh bit menyimpan satu bilangan bulat dengan bit tertinggi sebagai tanda, sehingga jarak antar nilai yang dapat disimpan selalu sama. Karena itu, nilai riil harus dibagi dengan faktor skala terlebih dahulu agar muat pada rentang bilangan bulat (Subbab 2.5.2).
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Susunan bit dan rentang nilai format numerik \parencite{gholami2021survey}}
+  \label{tab:format-numerik}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\textwidth}{@{}lcccccc@{}}
+    \hline
+    \textbf{Format} & \textbf{Total bit} & \textbf{Tanda} & \textbf{Eksponen} & \textbf{Mantisa} & \textbf{Rentang nilai} & \textbf{Presisi} \\
+    \hline
+    FP32 & 32 & 1 & 8 & 23 & $\pm 3{,}4 \times 10^{38}$ & 7 digit desimal \\
+    FP16 & 16 & 1 & 5 & 10 & $\pm 6{,}6 \times 10^{4}$ & 3 digit desimal \\
+    INT8 & 8 & 1 & -- & -- & $-128$ sampai 127 & 256 tingkat \\
+    INT4 & 4 & 1 & -- & -- & $-8$ sampai 7 & 16 tingkat \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.86\textwidth]{"resources/IEEE FP16 Bit Layout Diagram.png"}
+  \caption{Susunan bit pada format \textit{floating point} IEEE FP16}
+  \label{fig:layout-fp16}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.86\textwidth]{"resources/8-Bit Signed Integer Layout.png"}
+  \caption{Susunan bit pada bilangan bulat bertanda 8-bit (INT8)}
+  \label{fig:layout-int8}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.86\textwidth]{"resources/4-Bit Signed Integer Layout.png"}
+  \caption{Susunan bit pada bilangan bulat bertanda 4-bit (INT4)}
+  \label{fig:layout-int4}
+\end{figure}
+
+Ukuran teoretis model sebanding dengan jumlah bit per parameter. Dibandingkan FP16, ukuran teoretis INT4 adalah 25\% apabila seluruh parameter disimpan pada 4 bit dan dipadatkan. Angka itu adalah batas teoretis, bukan ukuran berkas tanpa \textit{bit-packing} (Subbab 2.5.7).
+
+\subsection{Pemetaan Nilai Riil ke Bilangan Bulat}
+
+Kuantisasi pada jaringan saraf diperkenalkan sebagai cara menggantikan komputasi \textit{floating point} dengan aritmetika bilangan bulat pada inferensi tanpa mengubah arsitektur model \parencite{jacob2018quantization}. Pemetaan nilai riil $x$ ke bilangan bulat $x_q$ berbentuk \parencite{jacob2018quantization}:
+\begin{equation}
+  x_q = \mathrm{round}\left(\frac{x}{s}\right) + z
+  \label{eq:kuantisasi}
+\end{equation}
+\noindent dengan $s$ faktor skala dan $z$ \textit{zero point} (bilangan bulat yang mewakili nilai riil nol). Hasilnya dibatasi pada rentang bilangan bulat yang tersedia. \textit{Dequantization} mengembalikan nilai riil melalui $\hat{x} = s\,(x_q - z)$. Selisih antara $x$ dan $\hat{x}$ adalah \textit{error} kuantisasi yang ditentukan oleh lebar langkah $s$. Skema simetris dan asimetris (Subbab 2.5.3), cakupan (Subbab 2.5.4), dan granularitas (Subbab 2.5.6) pada dasarnya adalah cara berbeda menentukan $s$ dan $z$.
+
+Penerapan kuantisasi pada model terlatih dimulai dengan menentukan rentang nilai setiap \textit{tensor}. Pada kuantisasi bobot saja, rentang dihitung dari bobot itu sendiri sehingga tidak memerlukan data kalibrasi, sedangkan kuantisasi aktivasi memerlukan data untuk mengamati rentang aktivasi \parencite{gholami2021survey}. Dari rentang tersebut dihitung $s$ dan $z$, lalu nilai riil dipetakan ke bilangan bulat dengan Persamaan~\ref{eq:kuantisasi}. Nilai terkuantisasi disimpan beserta skalanya, dan saat inferensi nilai tersebut dikembalikan melalui \textit{dequantization} sebelum komputasi.
+
+\subsection{Skema Kuantisasi Simetris dan Asimetris}
+
+Skema simetris menetapkan \textit{zero point} sama dengan nol dan membatasi bilangan bulat $b$-bit pada $-q_{\max}$ sampai $q_{\max}$, dengan $q_{\max} = 2^{b-1}-1$ \parencite{gholami2021survey}:
+\begin{equation}
+  x_q = \mathrm{round}\left(\frac{x}{s}\right)
+  \label{eq:simetris}
+\end{equation}
+\begin{equation}
+  s = \frac{\alpha}{q_{\max}}
+  \label{eq:skala}
+\end{equation}
+\noindent dengan $\alpha$ nilai absolut terbesar pada cakupan yang dipilih. Untuk $b = 4$, $q_{\max} = 7$, sehingga bilangan bulat berada pada $-7$ sampai 7 dan nilai $-8$ tidak dipakai. \textit{Dequantization} dilakukan dengan $\hat{x} = x_q \cdot s$.
+
+Sebagai contoh, bobot 0,30 pada \textit{tensor} dengan $\alpha = 0{,}8$ disimpan pada tiga format lalu dibaca kembali. Pada FP16, bobot ditulis langsung sebagai bit tanda, eksponen, dan mantisa (Subbab 2.5.1). Pada INT8, $q_{\max} = 127$ sehingga $s = 0{,}8/127 \approx 0{,}0063$, lalu $0{,}30/0{,}0063 \approx 47{,}6$ dibulatkan menjadi 48 dan dibaca kembali sebagai $48 \times 0{,}0063 \approx 0{,}3024$. Pada INT4, $q_{\max} = 7$ sehingga $s = 0{,}8/7 \approx 0{,}1143$, lalu $0{,}30/0{,}1143 \approx 2{,}63$ dibulatkan menjadi 3 dan dibaca kembali sebagai $3 \times 0{,}1143 \approx 0{,}3429$. Hasil ketiganya dirangkum pada Tabel~\ref{tab:contoh-format}. \textit{Error} INT4 paling besar karena langkah kuantisasi $s$ lebih lebar 18,1 kali daripada INT8 ($127/7$), dan \textit{error} pembulatan setiap bobot paling besar setengah dari $s$, yaitu 0,0031 pada INT8 dan 0,0571 pada INT4.
+
+\begin{table}[htbp]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Contoh penyimpanan bobot 0,30 pada FP16, INT8, dan INT4}
+  \label{tab:contoh-format}
+  \begin{tabularx}{\textwidth}{@{}>{\centering\arraybackslash}p{1.5cm}>{\centering\arraybackslash}p{1.9cm}>{\centering\arraybackslash}p{3.7cm}>{\centering\arraybackslash}X>{\centering\arraybackslash}X@{}}
+    \hline
+    \textbf{Format} & \textbf{Faktor skala $s$} & \textbf{Nilai tersimpan} & \textbf{Nilai dibaca kembali} & \textbf{\textit{Error}} \\
+    \hline
+    FP16 & -- & \mbox{\texttt{0 01101 0011001101}} & 0,30005 & 0,00005 \\
+    INT8 & 0,0063 & 48 & 0,3024 & 0,0024 \\
+    INT4 & 0,1143 & 3 & 0,3429 & 0,0429 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Pada skema asimetris, rentang dipetakan dari nilai terkecil hingga terbesar menggunakan seluruh tingkat dengan tambahan parameter $z$. Misalkan satu \textit{tensor} bernilai $-0{,}8$ sampai 0,6. Skema simetris memakai $\alpha = 0{,}8$ dengan $s \approx 0{,}114$, dan dua tingkat positif tertinggi tidak terpakai karena data hanya sampai 0,6. Skema asimetris memakai seluruh 16 tingkat dengan $s = 1{,}4/15 \approx 0{,}093$ dan $z = 1$. Perbedaan keduanya ditunjukkan pada Gambar~\ref{fig:pemetaan-simetris} dan Gambar~\ref{fig:pemetaan-asimetris}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.80\textwidth]{"resources/Pemetaan Rentang FP32 ke INT8.png"}
+  \caption{Pemetaan rentang pada kuantisasi simetris}
+  \label{fig:pemetaan-simetris}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.80\textwidth]{"resources/Asymmetric FP32 to INT8 Mapping.png"}
+  \caption{Pemetaan rentang pada kuantisasi asimetris}
+  \label{fig:pemetaan-asimetris}
+\end{figure}
+
+Skema simetris dipilih karena bobot model terlatih terkonsentrasi di sekitar nol, sehingga \textit{zero point} tidak diperlukan \parencite{gholami2021survey}. Aktivasi setelah fungsi aktivasi yang hanya menghasilkan nilai non-negatif tidak simetris terhadap nol, sehingga skema asimetris dipakai untuk aktivasi tersebut \parencite{gholami2021survey}.
+
+\subsection{Cakupan Kuantisasi \textit{Weight-Only} dan \textit{Joint Weight-Activation}}
+
+Kuantisasi dapat diterapkan pada bobot saja atau pada bobot dan aktivasi sekaligus. Notasi W$x$A$y$ menunjukkan bobot $x$-bit dan aktivasi $y$-bit, misalnya W8A8 untuk bobot dan aktivasi 8-bit \parencite{bondarenko2021understanding}. Pada BERT-base, \textcite{bondarenko2021understanding} melaporkan rata-rata skor GLUE sebesar 83,06 (FP32), 71,03 (W8A8), 70,25 (W32A8), dan 83,23 (W8A32). Penurunan skor muncul ketika aktivasi dikuantisasi, sedangkan kuantisasi bobot saja menghasilkan skor 83,23, 0,17 poin di atas FP32. Pada \textit{weight-only} PTQ, bobot dikuantisasi setelah pelatihan dan aktivasi tetap pada presisi asalnya.
+
+Cakupan bobot yang dikuantisasi juga memengaruhi hasil. Model IndoBERT-base untuk \textit{question answering} terdiri atas tiga kelompok parameter. Parameter \textit{embedding} berjumlah 38.794.752 (31,3\%), parameter lapisan linear berjumlah 84.934.656 (68,6\%) yang meliputi proyeksi atensi dan lapisan \textit{feed-forward}, dan sisanya 122.882 parameter (0,1\%) berupa \textit{answer head}, \textit{bias}, dan normalisasi lapisan. Penelitian ini mengkuantisasi matriks bobot lapisan linear dan \textit{embedding} (Subbab 1.5). Apabila seluruh matriks bobot tersebut dikuantisasi INT4 dan disimpan dalam wadah satu \textit{byte}, ukuran bobot terkuantisasi adalah 50\% dari ukuran FP16, dan 25\% bila dipadatkan, di luar parameter yang tidak dikuantisasi dan faktor skala (Subbab 2.5.7).
+
+\subsection{Waktu Penerapan \textit{Post-Training Quantization} dan \textit{Quantization-Aware Training}}
+
+Kuantisasi pascapelatihan (\textit{post-training quantization}, PTQ) menentukan skala dan \textit{zero point} dari model yang sudah dilatih, sehingga tidak memerlukan pelatihan ulang dan dapat diterapkan pada model hasil \textit{fine-tuning} \parencite{gholami2021survey}. Sebaliknya, \textit{quantization-aware training} (QAT) memasukkan operasi kuantisasi ke dalam proses pelatihan agar model beradaptasi dengan presisi rendah, dengan konsekuensi biaya komputasi karena pelatihan ulang \parencite{gholami2021survey}. Perbedaan keduanya dirangkum pada Tabel~\ref{tab:qat-ptq}.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Perbandingan \textit{Quantization-Aware Training} dan \textit{Post-Training Quantization} \parencite{gholami2021survey, abdurrahman2023implementing}}
+  \label{tab:qat-ptq}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+    \hline
+    \textbf{Aspek} & \textbf{QAT} & \textbf{PTQ} \\
+    \hline
+    Waktu penerapan & Selama proses pelatihan & Setelah model selesai dilatih \\
+    Pelatihan ulang & Diperlukan & Tidak diperlukan \\
+    Biaya komputasi & Tinggi karena pelatihan ulang & Rendah, hanya penentuan parameter kuantisasi \\
+    F1 rata-rata IndoBERT 4-bit & 74,94 \parencite{abdurrahman2023implementing} & 72,78 \parencite{abdurrahman2023implementing} \\
+    Contoh penelitian & Q8BERT \parencite{zafrir2019q8bert} dan QAT pada IndoBERT \parencite{abdurrahman2023implementing} & PTQ pada IndoBERT \parencite{abdurrahman2023implementing} dan Mokey \parencite{zadeh2022mokey} \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{Granularitas \textit{Per-Tensor} dan \textit{Per-Channel}}
+
+Granularitas menentukan cakupan bobot yang memakai parameter kuantisasi bersama \parencite{gholami2021survey}. Pada \textit{per-tensor} (\textit{coarse-grained}), satu skala dipakai untuk seluruh \textit{tensor}, sehingga $\alpha$ pada Persamaan~\ref{eq:skala} adalah nilai absolut terbesar seluruh \textit{tensor} $W$:
+\begin{equation}
+  s = \frac{\max(|W|)}{q_{\max}}
+  \label{eq:skala-coarse}
+\end{equation}
+Pada \textit{per-channel} (\textit{fine-grained}), satu skala ditentukan untuk setiap baris keluaran $j$ dari \textit{tensor} bobot \parencite{gholami2021survey}:
+\begin{equation}
+  s_j = \frac{\max(|W_j|)}{q_{\max}}
+  \label{eq:skala-fine}
+\end{equation}
+Kedua granularitas memakai rumus kuantisasi yang sama dan hanya berbeda pada cakupan nilai maksimum untuk menghitung skala. Sumbu $j$ adalah sumbu keluaran, yaitu baris pada matriks bobot lapisan linear, sedangkan pada \textit{embedding} satu baris adalah satu \textit{token}.
+
+Contoh berikut memakai matriks bobot $2 \times 4$ pada INT4 dengan baris A (0,80; $-0{,}30$; 0,10; 0,55) dan baris B (0,20; 0,09; $-0{,}15$; 0,04). Pada \textit{per-tensor}, nilai absolut terbesar seluruh matriks adalah 0,80, sehingga satu skala $s = 0{,}80/7 \approx 0{,}1143$ dipakai untuk kedelapan bobot. Pada \textit{per-channel}, baris A tetap memakai $s_A = 0{,}80/7 \approx 0{,}1143$, sedangkan baris B memakai $s_B = 0{,}20/7 \approx 0{,}0286$ karena nilai terbesarnya 0,20. Setiap bobot dibagi dengan skala barisnya, dibulatkan, lalu dikalikan kembali dengan skala yang sama, dan hasilnya ditunjukkan pada Tabel~\ref{tab:contoh-granularitas}. Pada baris A, kedua granularitas menghasilkan nilai yang sama karena skalanya sama. Pada baris B, rata-rata \textit{error} turun dari 0,0321 pada \textit{per-tensor} menjadi 0,0057 pada \textit{per-channel}, atau 5,6 kali lebih kecil, karena bobot kecil pada baris B tidak lagi dibulatkan dengan langkah yang ditentukan oleh nilai 0,80 pada baris A.
+
+\begin{table}[htbp]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.15}
+  \caption{Contoh penghitungan \textit{per-tensor} dan \textit{per-channel} pada matriks bobot $2 \times 4$}
+  \label{tab:contoh-granularitas}
+  \begin{tabularx}{\textwidth}{@{}c>{\centering\arraybackslash}p{0.9cm}*{6}{>{\centering\arraybackslash}X}@{}}
+    \hline
+    \textbf{Baris} & \textbf{Bobot} & \textbf{\textit{Per-tensor} bilangan bulat} & \textbf{\textit{Per-tensor} dibaca kembali} & \textbf{\textit{Per-tensor} \textit{error}} & \textbf{\textit{Per-channel} bilangan bulat} & \textbf{\textit{Per-channel} dibaca kembali} & \textbf{\textit{Per-channel} \textit{error}} \\
+    \hline
+    A & 0,80 & 7 & 0,8000 & 0,0000 & 7 & 0,8000 & 0,0000 \\
+    A & $-0{,}30$ & $-3$ & $-0{,}3429$ & 0,0429 & $-3$ & $-0{,}3429$ & 0,0429 \\
+    A & 0,10 & 1 & 0,1143 & 0,0143 & 1 & 0,1143 & 0,0143 \\
+    A & 0,55 & 5 & 0,5714 & 0,0214 & 5 & 0,5714 & 0,0214 \\
+    B & 0,20 & 2 & 0,2286 & 0,0286 & 7 & 0,2000 & 0,0000 \\
+    B & 0,09 & 1 & 0,1143 & 0,0243 & 3 & 0,0857 & 0,0043 \\
+    B & $-0{,}15$ & $-1$ & $-0{,}1143$ & 0,0357 & $-5$ & $-0{,}1429$ & 0,0071 \\
+    B & 0,04 & 0 & 0,0000 & 0,0400 & 1 & 0,0286 & 0,0114 \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+Cakupan yang lebih kecil membuat nilai ekstrem pada satu bagian bobot tidak memengaruhi skala bagian lain, tetapi menambah jumlah skala yang harus disimpan \parencite{gholami2021survey}. Faktor skala ikut tersimpan di samping bobot terkuantisasi, sehingga ukuran berkas aktual lebih besar daripada ukuran teoretis. Tabel~\ref{tab:granularitas} menempatkan \textit{per-tensor} dan \textit{per-channel} di antara pilihan granularitas yang tersedia.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \caption{Perbandingan tingkat granularitas kuantisasi \parencite{gholami2021survey}}
+  \label{tab:granularitas}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+    \hline
+    \textbf{Aspek} & \textbf{\textit{Per-tensor}} & \textbf{\textit{Per-channel}} & \textbf{\textit{Per-group}} \\
+    \hline
+    Cakupan satu skala & Satu \textit{tensor} & Satu baris keluaran & Satu kelompok elemen \\
+    Jumlah skala pada model penelitian & 75 & 133.458 & Tidak diuji \\
+    Variasi antarbaris & Tidak ditangani & Ditangani & Ditangani \\
+    Variasi dalam satu baris & Tidak ditangani & Tidak ditangani & Ditangani \\
+    \hline
+  \end{tabularx}
+\end{table}
+
+\subsection{Penyimpanan Bobot INT4 dengan Teknik \textit{Bit-Packing}}
+
+Memori umumnya dialamatkan per \textit{byte} (8 bit), sedangkan nilai INT4 hanya membutuhkan 4 bit. Tanpa penanganan khusus, satu nilai INT4 menempati satu \textit{byte} sehingga setengah kapasitas tidak terpakai. \textit{Bit-packing} memadatkan dua nilai INT4 ke dalam satu \textit{byte} melalui operasi \textit{bitwise} berupa penggeseran dan penggabungan bit, sehingga ukuran berkas bergantung pada cara penyimpanan dan bukan hanya pada jumlah bit per nilai.
+
+Tanpa \textit{bit-packing}, ukuran berkas INT4 dua kali ukuran teoretisnya, yaitu 50\% dari ukuran FP16 dan bukan 25\%. Parameter yang tidak dikuantisasi dan faktor skala menambah kurang dari 0,5\% dari ukuran FP16. Pada kuantisasi tersimulasi, bobot dikembalikan ke presisi asal melalui \textit{dequantization} sebelum komputasi sehingga penghematan hanya terjadi pada penyimpanan, bukan pada waktu komputasi \parencite{gholami2021survey}. Karena itu, latensi tidak dapat diklaim membaik hanya karena bobot disimpan pada presisi lebih rendah (Subbab 2.6.2).
+
+\section{Metrik Evaluasi dan Pengujian Signifikansi}
+
+\subsection{Metrik \textit{Exact Match} dan F1}
+
+\textit{Exact Match} (EM) dan F1 adalah metrik standar evaluasi SQuAD \parencite{rajpurkar2016squad}. Sebelum dibandingkan, jawaban prediksi dan jawaban acuan dinormalisasi dengan mengubah huruf menjadi huruf kecil, membuang tanda baca dan kata sandang bahasa Inggris (\textit{a}, \textit{an}, \textit{the}), serta menyeragamkan spasi \parencite{rajpurkar2016squad}. Pada SQuAD-id, pembuangan kata sandang bahasa Inggris hanya berdampak pada \textit{token} bahasa Inggris yang tidak diterjemahkan (seperti nama atau judul) dan berlaku setara pada kedua jawaban. Sebuah sampel bernilai 1 apabila jawaban prediksi cocok dengan salah satu jawaban acuan setelah normalisasi dan 0 apabila tidak, dan EM adalah proporsi sampel yang bernilai 1:
+\begin{equation}
+  \mathrm{EM} = \frac{\text{jumlah sampel yang cocok}}{N}
+  \label{eq:em}
+\end{equation}
+\noindent dengan $N$ jumlah sampel.
+
+F1 mengukur \textit{token overlap} antara jawaban prediksi dan jawaban acuan. \textit{Precision} ($P$) adalah proporsi \textit{token} prediksi yang juga muncul pada jawaban acuan, dan \textit{recall} ($R$) adalah proporsi \textit{token} jawaban acuan yang muncul pada prediksi \parencite{rajpurkar2016squad}. F1 dihitung dari keduanya:
+\begin{equation}
+  F1 = \frac{2 \cdot P \cdot R}{P + R}
+  \label{eq:f1}
+\end{equation}
+Pada setiap sampel dipakai jawaban acuan yang menghasilkan F1 tertinggi, lalu F1 akhir adalah rata-rata seluruh sampel.
+
+\subsection{Metrik Ukuran Model dan Latensi Inferensi}
+
+Latensi inferensi adalah waktu yang diperlukan model untuk menghasilkan prediksi bagi satu \textit{batch} masukan \parencite{gholami2021survey}. Latensi bergantung pada perangkat, implementasi \textit{kernel}, dan cara penyimpanan bobot, sehingga dilaporkan sebagai metrik deskriptif, tidak diuji signifikansinya, dan tidak dipakai sebagai dasar klaim percepatan. Prosedur pengukurannya dijelaskan pada Subbab 3.2.7.
+
+Efisiensi penyimpanan diukur melalui ukuran model dalam megabita (MB, 1 MB = $10^{6}$ byte), yaitu ukuran berkas setelah status model disimpan. Ukuran berkas aktual berbeda dari ukuran teoretis pada Subbab 2.4 karena faktor skala disimpan di samping bobot terkuantisasi, \textit{bias}, normalisasi lapisan, dan \textit{answer head} tidak dikuantisasi, dan \textit{bit-packing} tidak diterapkan (Subbab 2.5.7). Karena itu, ukuran teoretis dan ukuran berkas dilaporkan sebagai dua nilai yang berbeda.
+
+\subsection{Uji Signifikansi dengan McNemar dan \textit{Paired Bootstrap}}
+
+Selisih EM atau F1 antarkonfigurasi belum tentu mencerminkan perbedaan kinerja yang sesungguhnya, karena nilai tersebut dihitung pada sampel uji yang terbatas \parencite{dror2018hitchhiker}. Uji signifikansi diperlukan agar selisih yang teramati dapat dibedakan dari variasi acak pada sampel uji \parencite{dror2018hitchhiker}. Karena kedua model dievaluasi pada sampel uji yang sama, digunakan pengujian berpasangan.
+
+Untuk EM yang bernilai biner pada setiap sampel, selisih dua model diuji dengan uji McNemar \parencite{dror2018hitchhiker, mcnemar1947}. Sampel dikelompokkan menurut kebenaran prediksi kedua model, dengan $b$ jumlah sampel yang benar pada model pertama tetapi salah pada model kedua dan $c$ sebaliknya. Statistik ujinya dengan koreksi kontinuitas \parencite{edwards1948continuity} adalah:
+\begin{equation}
+  \chi^2 = \frac{\left(|b - c| - 1\right)^2}{b + c}
+  \label{eq:mcnemar}
+\end{equation}
+Apabila $b + c$ kurang dari 25, digunakan uji binomial eksak \parencite{fagerland2013mcnemar}.
+
+Untuk F1 yang bernilai kontinu, \textit{paired bootstrap} mengambil sampel ulang dengan pengembalian dari himpunan sampel uji sebanyak $B$ kali, lalu menghitung selisih rata-rata skor kedua model pada setiap sampel ulang \parencite{bergkirkpatrick2012, efron1993}:
+\begin{equation}
+  \Delta^{*} = \bar{f}^{*}_{A} - \bar{f}^{*}_{B}
+  \label{eq:bootstrap}
+\end{equation}
+\noindent dengan $\bar{f}^{*}_{A}$ dan $\bar{f}^{*}_{B}$ rata-rata skor model A dan model B pada satu sampel ulang. Penelitian ini memakai $B = 10.000$, sehingga diperoleh 10.000 nilai $\Delta^{*}$. Selisih dianggap signifikan apabila interval persentil 95\% dari $\Delta^{*}$ tidak memuat nol dengan taraf signifikansi $\alpha = 0{,}05$. Nilai $p$ dua sisi diperoleh dari dua kali proporsi sampel ulang yang selisihnya berada di sisi nol yang lebih kecil \parencite{efron1993}.
+
+Perbandingan beberapa konfigurasi pada \textit{dataset} yang sama menambah jumlah uji berpasangan dan peluang kesalahan tipe I, sehingga nilai $p$ dikoreksi dengan metode Holm \parencite{holm1979}. Koreksi diterapkan terpisah untuk EM dan F1. $m$ nilai $p$ diurutkan dari terkecil, dan hipotesis ke-$k$ ditolak apabila $p_{(k)} \le \alpha/(m-k+1)$ serta seluruh hipotesis sebelumnya telah ditolak. Ukuran model bersifat deterministik sehingga tidak diuji, dan latensi diperlakukan sebagai metrik deskriptif.
+
+\section{Penelitian Terdahulu dan Celah Penelitian}
+
+\subsection{Ringkasan Penelitian Terdahulu}
+
+Penelitian terdahulu pada Tabel~\ref{tab:penelitian-terdahulu} dipilih dengan empat syarat. Pertama, penelitian menerapkan kuantisasi tanpa pelatihan ulang atau pada model \textit{encoder} \textit{Transformer}. Kedua, penelitian dievaluasi pada GLUE atau SQuAD. Ketiga, penelitian terbit dalam lima tahun terakhir (2021--2026). Keempat, penelitian telah disitasi minimal lima kali menurut OpenAlex per 21 Oktober 2026. Urutannya dari yang paling relevan, yaitu PTQ \textit{weight-only} 4-bit pada BERT, hingga studi yang hanya berbagi masalah \textit{outlier} atau pengelompokan skala. SQuAD (termasuk SQuAD v1.1 dan v2.0) dipakai pada empat dari enam studi di tabel \parencite{zadeh2022mokey, bai2022towards, guo2023olive, wei2022outlier}. \textcite{gholami2021survey} adalah survei yang menjadi dasar teori Subbab 2.5 dan tidak dimasukkan ke tabel karena tidak melaporkan eksperimen.
+
+\textcite{zadeh2022mokey} mengubah bobot BERT-Large menjadi indeks 4-bit tanpa \textit{fine-tuning} dan melaporkan F1 SQuAD v1.1 sebesar 93,17 dibanding 93,15 pada presisi penuh. \textcite{bai2022towards} meminimalkan \textit{error} rekonstruksi per modul, sedangkan \textcite{wei2022outlier} dan \textcite{guo2023olive} menangani \textit{outlier} aktivasi pada presisi 6-bit dan 4-bit. \textcite{bondarenko2021understanding} menganalisis kegagalan kuantisasi naif pada \textit{Transformer} dan memakai pengelompokan skala \textit{per-embedding-group}, sedangkan \textcite{kim2021ibert} membangun inferensi bilangan bulat penuh dengan \textit{speedup} 2,4 sampai 4,0 kali pada GPU T4.
+
+Keenam penelitian tersebut dievaluasi pada bahasa Inggris. Penelitian pada bahasa Indonesia yang relevan terbit pada 2023 sampai 2026 dan belum mencapai lima sitasi pada tanggal tersebut, sehingga tidak dimasukkan ke tabel tetapi dibahas di sini. \textcite{abdurrahman2023implementing} menerapkan PTQ dan QAT pada IndoBERT dengan bobot 16, 8, 6, dan 4 bit untuk tujuh tugas IndoNLU, dan melaporkan F1 rata-rata PTQ 4-bit sebesar 72,78 dibanding 77,35 pada FP32, tanpa menyebut granularitas. Ramaputra dan Joddy (\citeyear{ramaputra2026evaluating}) menerapkan PTQ \textit{weight-only} dengan AWQ dan GPTQ pada model Qwen2.5 dan Gemma-3 untuk SQuAD-id, dengan EM Qwen2.5-14B 4-bit turun dari 48,61 menjadi 44,73 dan 43,80, sedangkan Qwen2.5-7B 4-bit berubah dari 42,05 menjadi 42,15 dan 42,34. \textcite{suhendra2026matrik} membandingkan model BERT berbahasa Indonesia pada SQuAD-id tanpa kuantisasi dan memakai \textit{bootstrap}, dengan F1 63,59 untuk \texttt{indobert-\allowbreak base-\allowbreak p1} dan 71,58 untuk \texttt{indolem/\allowbreak indobert-\allowbreak base-\allowbreak uncased}. \textcite{sanjaya2026quantization} membandingkan PTQ dan QAT pada IndoBERT untuk analisis sentimen tiga kelas dengan presisi FP16, INT8, dan INT4, dan melaporkan akurasi yang berubah tidak lebih dari 0,4 poin persentase.
+
+{\setlength{\tabcolsep}{3pt}
+\captionsetup[longtable]{font=normalsize}
+\begingroup\scriptsize
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}c>{\raggedright\arraybackslash}p{1.55cm}>{\raggedright\arraybackslash}p{1.95cm}>{\raggedright\arraybackslash}p{2.45cm}>{\raggedright\arraybackslash}p{1.95cm}>{\raggedright\arraybackslash}p{1.25cm}>{\raggedright\arraybackslash}p{2.55cm}@{}}
+  \caption{Penelitian terdahulu}
+  \label{tab:penelitian-terdahulu} \\
+  \hline
+  \textbf{No} & \textbf{Referensi} & \textbf{Tujuan atau masalah} & \textbf{Model dan \textit{dataset}} & \textbf{Teknik} & \textbf{Metrik} & \textbf{Hasil utama} \\
+  \hline
+  \endfirsthead
+  \hline
+  \multicolumn{7}{c}{\tablename~\thetable{} (lanjutan)} \\
+  \hline
+  \textbf{No} & \textbf{Referensi} & \textbf{Tujuan atau masalah} & \textbf{Model dan \textit{dataset}} & \textbf{Teknik} & \textbf{Metrik} & \textbf{Hasil utama} \\
+  \hline
+  \endhead
+  \hline
+  \endlastfoot
+  1 & Zadeh et al. (2022) & Metode \textit{fixed-point} biasanya menuntut pelatihan ulang, sehingga perlu cara agar model \textit{floating point} dapat dijalankan tanpa \textit{fine-tuning} & BERT-Base/Large, RoBERTa-Large, DeBERTa-XL; MNLI, STS-B, SQuAD v1.1 & PTQ \textit{weight-only} 4-bit: bobot menjadi indeks 4-bit ke \textit{dictionary} \textit{centroid} 16-bit & F1, akurasi & BERT-Large SQuAD: F1 93,15 (FP) $\rightarrow$ 93,17 (\textit{weight-only}), 92,22 bila aktivasi ikut dikuantisasi \\
+  2 & Bai et al. (2022) & PTQ naif menurunkan akurasi model bahasa pralatih, sehingga diperlukan optimasi per modul & Model bahasa pralatih (keluarga BERT); GLUE dan SQuAD & PTQ per modul (MREM): \textit{error} rekonstruksi diminimalkan pada tiap modul & EM, F1, metrik GLUE & Hasil mendekati QAT pada GLUE dan SQuAD dengan biaya pelatihan lebih rendah \\
+  3 & Guo et al. (2023) & \textit{Outlier} pada aktivasi membuat kuantisasi 4-bit bobot dan aktivasi gagal & BERT-Base/Large, BART-Base; GLUE (8 tugas), SQuAD v1.1 dan v2.0 & PTQ 4-bit bobot dan aktivasi (W4A4) dengan \textit{outlier-victim pair} & Akurasi, F1 & Penurunan akurasi kurang dari 1\% pada 4-bit, mengungguli PTQ 6-bit \textit{outlier suppression} \\
+  4 & Wei et al. (2022) & \textit{Outlier} pada aktivasi dan \textit{embedding} menghambat kuantisasi presisi rendah & BERT, RoBERTa, BART; GLUE, SQuAD v1.1 dan v2.0, peringkasan & PTQ 6-bit: \textit{gamma migration} dan \textit{token-wise clipping} & EM, F1, metrik GLUE & PTQ BERT 6-bit mencapai level presisi penuh. Pada SQuAD v1.1 unggul 4,73\% (BERT) dan 15,55\% (RoBERTa) dibanding metode PTQ 6-bit terbaik sebelumnya \\
+  5 & Bondarenko et al. (2021) & Kuantisasi naif gagal pada \textit{Transformer} & BERT-Base; GLUE & PTQ dan QAT dengan \textit{per-embedding-group quantization} & Metrik GLUE & GLUE 83,06 (FP32), 71,03 (W8A8), 70,25 (W32A8), 83,23 (W8A32) \\
+  6 & Kim et al. (2021) & Operasi non-linear seperti GELU, Softmax, dan LayerNorm menghalangi kuantisasi \textit{integer-only} & BERT, RoBERTa; GLUE & Kuantisasi \textit{integer-only} INT8 (W8A8) dengan aproksimasi GELU, Softmax, dan LayerNorm & Metrik GLUE & Akurasi setara atau sedikit lebih tinggi dari FP32, dengan \textit{speedup} 2,4--4,0$\times$ pada GPU T4 \\
+\end{longtable}
+\endgroup
+}
+
+\noindent Keterangan: MREM (\textit{module-wise reconstruction error minimization}), GLUE (\textit{General Language Understanding Evaluation}), MNLI (\textit{Multi-Genre Natural Language Inference}), STS-B (\textit{Semantic Textual Similarity Benchmark}). Angka antarbaris tidak dapat dibandingkan langsung karena metrik dilaporkan pada \textit{dataset} dan tugas yang berbeda. Tabel ini menunjukkan selisih kinerja terhadap presisi penuh pada masing-masing penelitian, bukan peringkat metode.
+
+\subsection{Celah Penelitian dan Kerangka Berpikir}
+
+Tabel~\ref{tab:penelitian-terdahulu} dan penelitian berbahasa Indonesia pada Subbab 2.7.1 menunjukkan tiga celah. Pertama, kuantisasi bobot 4-bit pada model \textit{encoder} dilaporkan pada BERT berbahasa Inggris \parencite{zadeh2022mokey}. Pada IndoBERT, kuantisasi 4-bit baru dilaporkan sebagai F1 rata-rata tujuh tugas IndoNLU, termasuk FacQA yang berupa \textit{span extraction}, tanpa menyebut granularitas \parencite{abdurrahman2023implementing}. Pada SQuAD-id, kuantisasi baru dilaporkan untuk model \textit{decoder-only} \parencite{ramaputra2026evaluating}, dan studi pada model \textit{encoder} tidak menerapkan kuantisasi \parencite{suhendra2026matrik}. Kedua, pengelompokan skala pada \textit{encoder} dikaji pada BERT berbahasa Inggris dengan tugas GLUE \parencite{bondarenko2021understanding}. Granularitas relevan pada INT4 karena skema simetris hanya menyediakan 15 tingkat nilai ($-7$ sampai 7) dan satu nilai ekstrem dapat memperlebar langkah kuantisasi seluruh bobot dalam satu \textit{tensor} (Persamaan~\ref{eq:skala-coarse}), sedangkan \textit{per-channel} membatasi pengaruh itu pada satu baris (Persamaan~\ref{eq:skala-fine}). Ketiga, studi yang membandingkan model pada SQuAD-id memakai \textit{bootstrap} \parencite{suhendra2026matrik}, tetapi tidak untuk menguji selisih model terkuantisasi terhadap \textit{baseline} dengan koreksi perbandingan berganda. Dalam penelusuran penulis, ketiga hal tersebut belum ditemukan.
+
+Penelitian ini menjawab celah tersebut dengan mengevaluasi \textit{weight-only} PTQ INT4 pada IndoBERT untuk SQuAD-id. Dua granularitas, \textit{per-tensor} dan \textit{per-channel}, dibandingkan dengan model FP16 menggunakan EM, F1, ukuran model, dan latensi, dan selisih EM dan F1 diuji signifikansinya. Alur penalaran ini dirangkum pada Gambar~\ref{fig:kerangka-berpikir}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth,height=0.34\textheight,keepaspectratio]{"resources/Kerangka berpikir penelitian.png"}
+  \caption{Kerangka berpikir penelitian}
+  \label{fig:kerangka-berpikir}
+\end{figure}

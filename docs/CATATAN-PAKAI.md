@@ -36,6 +36,9 @@ Hasil: **`dist/thesis.pdf`**. File sementara ada di `build/` dan aman dihapus.
 .\excerpt.ps1 -Pilih "bab2"        # BAB II utuh
 .\excerpt.ps1 -Pilih "bab2[1]"     # hanya section 1 BAB II
 .\excerpt.ps1 -Pilih "bab2" -Format docx   # Word: dist/excerpt-bab2.docx
+
+# Seluruh bagian awal + Bab I-III + Daftar Rujukan (untuk kirim ke pembimbing)
+.\excerpt.ps1 -Pilih "cover,logo,title,approval,endorsement,statement,ringkasan,summary,forewords,daftarisi,daftartabel,daftargambar,daftarrumus,bab1,bab2,bab3,pustaka" -Nama "awal-sampai-bab3"
 ```
 
 ```bat
@@ -45,6 +48,8 @@ excerpt.bat bab2 "" docx
 
 Hasil: `dist/excerpt-<nama>.pdf` (atau `.docx` dengan `-Format docx`).
 Di menu interaktif, format keluaran ditanyakan di akhir (1 = PDF, 2 = Word, 3 = keduanya).
+Kode `daftarisi`, `daftartabel`, `daftargambar`, dan `daftarrumus` hanya tersedia
+pada keluaran PDF; pada DOCX hanya Daftar Isi yang dibuat (lewat `--toc` pandoc).
 
 ## Ekspor ke Word (DOCX)
 

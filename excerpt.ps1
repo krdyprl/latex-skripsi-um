@@ -47,11 +47,16 @@ $catalog = @(
     @{ key = 'ringkasan';   kind = 'front';  file = 'chapters/abstract-id';    label = 'Ringkasan (Indonesia)' }
     @{ key = 'summary';     kind = 'front';  file = 'chapters/abstract-en';    label = 'Summary (Inggris)' }
     @{ key = 'forewords';   kind = 'front';  file = 'chapters/forewords';      label = 'Kata Pengantar' }
+    @{ key = 'daftarisi';    kind = 'list';   ext = 'toc';  label = 'Daftar Isi' }
+    @{ key = 'daftartabel';  kind = 'list';   ext = 'lot';  label = 'Daftar Tabel' }
+    @{ key = 'daftargambar'; kind = 'list';   ext = 'lof';  label = 'Daftar Gambar' }
+    @{ key = 'daftarrumus';  kind = 'list';   ext = 'rum';  label = 'Daftar Rumus' }
     @{ key = 'bab1';        kind = 'bab';    num = 1;  file = 'chapters/chapter-1'; label = 'Bab I — Pendahuluan' }
     @{ key = 'bab2';        kind = 'bab';    num = 2;  file = 'chapters/chapter-2'; label = 'Bab II — Tinjauan Pustaka' }
     @{ key = 'bab3';        kind = 'bab';    num = 3;  file = 'chapters/chapter-3'; label = 'Bab III — Analisis dan Perancangan' }
     @{ key = 'bab4';        kind = 'bab';    num = 4;  file = 'chapters/chapter-4'; label = 'Bab IV — Evaluasi dan Pembahasan' }
     @{ key = 'bab5';        kind = 'bab';    num = 5;  file = 'chapters/chapter-5'; label = 'Bab V — Penutup' }
+    @{ key = 'pustaka';      kind = 'bib';    label = 'Daftar Rujukan' }
     @{ key = 'lamp1';       kind = 'lamp';   num = 1;  file = 'chapters/appendix-1'; label = 'Lampiran 1 — Instrumen Pengujian' }
     @{ key = 'lamp2';       kind = 'lamp';   num = 2;  file = 'chapters/appendix-2'; label = 'Lampiran 2 — Rincian Kasus Uji' }
     @{ key = 'bio';         kind = 'bio';    file = 'chapters/biography';        label = 'Riwayat Hidup' }
@@ -76,7 +81,10 @@ function Get-BabSections {
 # Slug nama file dari teks (hapus spasi & karakter khusus)
 function Get-Slug {
     param([string]$Text)
-    $t = $Text -replace '[^A-Za-z0-9]', ''
+    # Tanda hubung dan garis bawah dipertahankan agar nama berkas tetap terbaca
+    # (mis. "awal-sampai-bab3"), bukan digabung menjadi satu kata.
+    $t = $Text -replace '[^A-Za-z0-9_-]', ''
+    $t = $t.Trim('-', '_')
     if ($t.Length -eq 0) { $t = 'bagian' }
     return $t
 }
@@ -94,6 +102,8 @@ function Show-Menu {
     foreach ($u in $catalog) { if ($u.kind -eq 'front') { Write-Host ("  {0,-12} {1}" -f $u.key, $u.label) } }
     Write-Host "--- Bab (utuh atau pilih section: babN[a,b]) ---"
     foreach ($u in $catalog) { if ($u.kind -eq 'bab') { Write-Host ("  {0,-12} {1}" -f $u.key, $u.label) } }
+    Write-Host "--- Daftar & rujukan ---"
+    foreach ($u in $catalog) { if ($u.kind -eq 'list' -or $u.kind -eq 'bib') { Write-Host ("  {0,-12} {1}" -f $u.key, $u.label) } }
     Write-Host "--- Lampiran & lain ---"
     foreach ($u in $catalog) { if ($u.kind -eq 'lamp' -or $u.kind -eq 'bio') { Write-Host ("  {0,-12} {1}" -f $u.key, $u.label) } }
     Write-Host ""
@@ -228,10 +238,25 @@ function New-Driver {
         [void]$sb.AppendLine('\bibliography{references}')
     }
     [void]$sb.AppendLine('\begin{document}')
+    # Nomor halaman: pilihan yang dimulai dari halaman tata letak memakai
+    # romawi (sampul s.d. kata pengantar), lalu arabic mulai 1 pada bab.
+    $frontKeys = @('cover', 'logo', 'title')
+    $startsAtFront = ($Units.Count -gt 0) -and ($Units[0].cat.kind -eq 'front')
+    $romanOpen = $false
+    $romawiDitutup = $false
+    $arabicStarted = $false
     if (-not $isDocx) {
-        [void]$sb.AppendLine('\pagenumbering{arabic}')
-        [void]$sb.AppendLine('\setcounter{page}{1}')
-        [void]$sb.AppendLine('\pagestyle{plain}')
+        if ($startsAtFront) {
+            [void]$sb.AppendLine('\pagenumbering{roman}')
+            [void]$sb.AppendLine('\setcounter{page}{1}')
+            $romanOpen = $true
+        }
+        else {
+            [void]$sb.AppendLine('\pagenumbering{arabic}')
+            [void]$sb.AppendLine('\setcounter{page}{1}')
+            [void]$sb.AppendLine('\pagestyle{plain}')
+            $arabicStarted = $true
+        }
     }
 
     $hasBab = $false
@@ -257,6 +282,20 @@ function New-Driver {
     $bibWritten = $false
     foreach ($u in $Units) {
         $cat = $u.cat
+        # Sampul/lambang/halaman judul tidak bernomor; halaman berikutnya = i.
+        if (-not $isDocx -and $romanOpen -and -not $romawiDitutup -and ($frontKeys -notcontains $cat.key)) {
+            [void]$sb.AppendLine('\setcounter{page}{1}')
+            [void]$sb.AppendLine('\pagestyle{plain}')
+            $romawiDitutup = $true
+        }
+        # Bab pertama memulai nomor arabic dari 1.
+        if (-not $isDocx -and $cat.kind -eq 'bab' -and -not $arabicStarted) {
+            [void]$sb.AppendLine('\clearpage')
+            [void]$sb.AppendLine('\pagestyle{fancy}')
+            [void]$sb.AppendLine('\pagenumbering{arabic}')
+            [void]$sb.AppendLine('\setcounter{page}{1}')
+            $arabicStarted = $true
+        }
         switch ($cat.kind) {
             'front' {
                 [void]$sb.AppendLine("\input{$($cat.file)}")
@@ -273,6 +312,28 @@ function New-Driver {
                     }
                     [void]$sb.AppendLine("\input{_excerpt-part$($cat.num)}")
                 }
+            }
+            'list' {
+                if (-not $isDocx) {
+                    switch ($cat.ext) {
+                        'toc' { [void]$sb.AppendLine('\tableofcontents') }
+                        'lot' { [void]$sb.AppendLine('\listoftables') }
+                        'lof' { [void]$sb.AppendLine('\listoffigures') }
+                        'rum' { [void]$sb.AppendLine('\listofrumus') }
+                    }
+                }
+                # DOCX: hanya Daftar Isi yang bisa dibuat pandoc (--toc).
+            }
+            'bib' {
+                if ($isDocx) {
+                    Add-Marker '@@REFS@@'
+                }
+                else {
+                    # heading=bibintoc: judul sekaligus entri Daftar Isi pada
+                    # halaman pertama daftar rujukan.
+                    [void]$sb.AppendLine('\printbibliography[heading=bibintoc, title={Daftar Rujukan}]')
+                }
+                $bibWritten = $true
             }
             'lamp' {
                 if (-not $appendixDone) {
@@ -300,8 +361,7 @@ function New-Driver {
         }
         # PDF: Daftar Rujukan setelah bab terakhir (sebelum lampiran) jika ada bab
         if (-not $isDocx -and $hasBab -and $cat.kind -eq 'lamp' -and -not $bibWritten) {
-            [void]$sb.AppendLine('\printbibliography[title={DAFTAR RUJUKAN}]')
-            [void]$sb.AppendLine('\addcontentsline{toc}{chapter}{Daftar Rujukan}')
+            [void]$sb.AppendLine('\printbibliography[heading=bibintoc, title={Daftar Rujukan}]')
             $bibWritten = $true
         }
     }
@@ -312,8 +372,7 @@ function New-Driver {
             Add-Marker '@@REFS@@'
         }
         else {
-            [void]$sb.AppendLine('\printbibliography[title={DAFTAR RUJUKAN}]')
-            [void]$sb.AppendLine('\addcontentsline{toc}{chapter}{Daftar Rujukan}')
+            [void]$sb.AppendLine('\printbibliography[heading=bibintoc, title={Daftar Rujukan}]')
         }
     }
 
@@ -408,7 +467,7 @@ function Get-PandocPath {
 }
 
 function Invoke-BuildDocx {
-    param([string]$DrvPath, [string]$OutBase)
+    param([string]$DrvPath, [string]$OutBase, [switch]$WithToc)
     New-Item -ItemType Directory -Path (Join-Path $root 'dist') -Force | Out-Null
     $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
     $pandoc = Get-PandocPath
@@ -420,17 +479,23 @@ function Invoke-BuildDocx {
         & $pandoc lua ../docs/pandoc/preprocess.lua _excerpt.tex _excerpt-docx.tex
         if ($LASTEXITCODE -ne 0) { throw "Praproses DOCX gagal (kode $LASTEXITCODE)." }
 
-        & $pandoc _excerpt-docx.tex `
-            -f latex -t docx `
-            --standalone `
-            --reference-doc=../docs/pandoc/reference.docx `
-            --lua-filter=../docs/pandoc/postprocess.lua `
-            --citeproc `
-            --bibliography=references.bib `
-            --csl=../docs/pandoc/apa.csl `
-            --metadata "reference-section-title=DAFTAR RUJUKAN" `
-            --resource-path=. `
-            -o $dest
+        $pandocArgs = @(
+            '_excerpt-docx.tex',
+            '-f', 'latex', '-t', 'docx',
+            '--standalone'
+        )
+        if ($WithToc) { $pandocArgs += '--toc' }
+        $pandocArgs += @(
+            '--reference-doc=../docs/pandoc/reference.docx',
+            '--lua-filter=../docs/pandoc/postprocess.lua',
+            '--citeproc',
+            '--bibliography=references.bib',
+            '--csl=../docs/pandoc/apa.csl',
+            '--metadata', 'reference-section-title=DAFTAR RUJUKAN',
+            '--resource-path=.',
+            '-o', $dest
+        )
+        & $pandoc @pandocArgs
         if ($LASTEXITCODE -ne 0) { throw "Konversi DOCX gagal (kode $LASTEXITCODE)." }
     }
     finally {
@@ -498,6 +563,12 @@ try {
     $base = if ($Nama.Trim() -ne '') { (Get-Slug $Nama) } else { New-NamaOutput -Units $units }
     $ringkasan = ($units | ForEach-Object { if ($_.full) { $_.cat.key } else { "$($_.cat.key)[$($_.sections -join ',')]" } }) -join ', '
 
+    $hasToc = [bool](@($units | Where-Object { $_.cat.kind -eq 'list' -and $_.cat.ext -eq 'toc' }).Count -gt 0)
+    $daftarTakDidukung = @($units | Where-Object { $_.cat.kind -eq 'list' -and $_.cat.ext -ne 'toc' })
+    if ($Format -ne 'pdf' -and $daftarTakDidukung.Count -gt 0) {
+        Write-Host 'Peringatan: Daftar Tabel/Gambar/Rumus hanya dibuat pada keluaran PDF.' -ForegroundColor Yellow
+    }
+
     $formats = if ($Format -eq 'both') { @('pdf', 'docx') } else { @($Format) }
     $hasil = @()
     foreach ($fmt in $formats) {
@@ -505,7 +576,7 @@ try {
         Write-Host ""
         Write-Host ("Membangun ({0}): {1}  ->  dist/excerpt-{2}.{0}" -f $fmt, $ringkasan, $base)
         if ($fmt -eq 'docx') {
-            $hasil += Invoke-BuildDocx -DrvPath $drv -OutBase $base
+            $hasil += Invoke-BuildDocx -DrvPath $drv -OutBase $base -WithToc:$hasToc
         }
         else {
             $hasil += Invoke-Build -DrvPath $drv -OutBase $base

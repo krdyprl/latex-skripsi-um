@@ -1,0 +1,44 @@
+%--------------------------------------------------------------------%
+%
+% Lembar Persetujuan Pembimbing (Pedoman UM Lampiran 4a)
+%
+% Halaman ini adalah halaman pertama bagian awal yang bernomor (i).
+%
+%--------------------------------------------------------------------%
+
+\clearpage
+
+\begin{center}
+    \bfseries LEMBAR PERSETUJUAN PEMBIMBING SKRIPSI
+\end{center}
+
+\phantomsection
+\addcontentsline{toc}{chapter}{LEMBAR PERSETUJUAN PEMBIMBING SKRIPSI}
+
+\vspace{\baselineskip}
+
+\noindent Skripsi oleh \penulis\ dengan judul ``\judul'' telah diperiksa dan disetujui untuk dilaksanakan sidang skripsi.
+
+\vspace{2\baselineskip}
+
+% Satu pembimbing: satu blok tanda tangan rata kiri.
+% Dua pembimbing: dua blok berdampingan (Pembimbing I dan II).
+\ifx\pembimbingDua\empty
+\noindent
+\begin{tabular}{@{}l@{}}
+\kotatanggal \\
+Dosen Pembimbing \\[2cm]
+\pembimbingSatu \\
+\nipSatu
+\end{tabular}
+\else
+\noindent
+\begin{tabular}{@{}p{0.45\textwidth}p{0.45\textwidth}@{}}
+\kotatanggal & \kotatanggal \\
+Pembimbing I & Pembimbing II \\[2cm]
+\pembimbingSatu & \pembimbingDua \\
+\nipSatu & \nipDua
+\end{tabular}
+\fi
+
+\clearpage

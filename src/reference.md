@@ -2,7 +2,7 @@
 %
 % Database referensi bibliografi
 %
-% author: [Nama Mahasiswa]
+% author: [Kardynan Parulian]
 %
 %--------------------------------------------------------------------%
 %
@@ -69,6 +69,17 @@
     year={2025},
     publisher={ACM},
     doi={10.1145/3711129}
+}
+
+@article{gardazi2025bert,
+    title={{BERT} applications in natural language processing: a review},
+    author={Gardazi, Nadia Mushtaq and Daud, Ali and Malik, Muhammad Kamran and Bukhari, Amal and Alsahfi, Tariq and Alshemaimri, Bader},
+    journal={Artificial Intelligence Review},
+    volume={58},
+    pages={166},
+    year={2025},
+    publisher={Springer},
+    doi={10.1007/s10462-025-11162-5}
 }
 
 
@@ -351,4 +362,166 @@
     year={2009},
     publisher={Elsevier},
     doi={10.1016/j.ipm.2009.03.002}
+}
+
+% --------------------------------------------------------------------
+% REFERENSI TAMBAHAN BAB II (revisi metrik: ECE, flip, KL)
+% --------------------------------------------------------------------
+
+@inproceedings{bondarenko2021understanding,
+    title={Understanding and Overcoming the Challenges of Efficient Transformer Quantization},
+    author={Bondarenko, Yelysei and Nagel, Markus and Blankevoort, Tijmen},
+    booktitle={Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+    pages={7947--7969},
+    year={2021},
+    address={Online and Punta Cana, Dominican Republic},
+    publisher={Association for Computational Linguistics},
+    doi={10.18653/v1/2021.emnlp-main.627}
+}
+
+@inproceedings{guo2017calibration,
+    title={On Calibration of Modern Neural Networks},
+    author={Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q.},
+    booktitle={Proceedings of the 34th International Conference on Machine Learning (ICML)},
+    series={Proceedings of Machine Learning Research},
+    volume={70},
+    pages={1321--1330},
+    year={2017},
+    organization={PMLR}
+}
+
+@article{dutta2024accuracy,
+    title={Accuracy is Not All You Need},
+    author={Dutta, Abhinav and Krishnan, Shankar and Kwatra, Nipun and Ramjee, Ramachandran},
+    journal={arXiv preprint arXiv:2407.09141},
+    year={2024},
+    url={https://arxiv.org/abs/2407.09141}
+}
+
+% [LENGKAPI] Qamar et al. (2026): lengkapi judul, penulis, dan venue dari PDF (opsional).
+@misc{qamar2026,
+    title={[LENGKAPI] Judul makalah Qamar et al. (2026)},
+    author={Qamar, A. and others},
+    year={2026}
+}
+
+% --------------------------------------------------------------------
+% REFERENSI TAMBAHAN BAB I DAN BAB II (revisi: Devign + CodeBERT)
+% --------------------------------------------------------------------
+
+@inproceedings{daloisio2025compression,
+    title={On the Compression of Language Models for Code: An Empirical Study on {CodeBERT}},
+    author={D'Aloisio, G. and Traini, L. and Sarro, F. and Di Marco, A.},
+    booktitle={2025 IEEE International Conference on Software Analysis, Evolution and Reengineering (SANER)},
+    pages={12--23},
+    year={2025},
+    url={https://arxiv.org/abs/2412.13737}
+}
+
+@inproceedings{feng2020codebert,
+    title={{CodeBERT}: A Pre-Trained Model for Programming and Natural Languages},
+    author={Feng, Z. and Guo, D. and Tang, D. and Duan, N. and Feng, X. and Gong, M. and Shou, L. and Qin, B. and Liu, T. and Jiang, D. and Zhou, M.},
+    booktitle={Findings of the Association for Computational Linguistics: EMNLP 2020},
+    pages={1536--1547},
+    year={2020},
+    publisher={Association for Computational Linguistics},
+    url={https://aclanthology.org/2020.findings-emnlp.139}
+}
+
+@inproceedings{zhou2019devign,
+    title={{Devign}: Effective Vulnerability Identification by Learning Comprehensive Program Semantics via Graph Neural Networks},
+    author={Zhou, Y. and Liu, S. and Siow, J. and others},
+    booktitle={Advances in Neural Information Processing Systems},
+    pages={10197--10207},
+    year={2019}
+}
+
+@article{lu2021codexglue,
+    title={{CodeXGLUE}: A Machine Learning Benchmark Dataset for Code Understanding and Generation},
+    author={Lu, S. and Guo, D. and Ren, S. and others},
+    journal={CoRR},
+    volume={abs/2102.04664},
+    year={2021},
+    url={https://arxiv.org/abs/2102.04664}
+}
+
+@inproceedings{shi2022compressing,
+    title={Compressing Pre-trained Models of Code into 3 {MB}},
+    author={Shi, J. and Yang, Z. and Xu, B. and Kang, H. J. and Lo, D.},
+    booktitle={Proceedings of the 37th IEEE/ACM International Conference on Automated Software Engineering (ASE '22)},
+    year={2022},
+    doi={10.1145/3551349.3556964}
+}
+
+@inproceedings{shi2024greening,
+    title={Greening Large Language Models of Code},
+    author={Shi, J. and Yang, Z. and Kang, H. J. and Xu, B. and He, J. and Lo, D.},
+    booktitle={Proceedings of the 46th International Conference on Software Engineering: Software Engineering in Society (ICSE-SEIS '24)},
+    pages={142--153},
+    year={2024},
+    doi={10.1145/3639475.3640097}
+}
+
+@inproceedings{wei2023towards,
+    title={Towards Greener Yet Powerful Code Generation via Quantization: An Empirical Study},
+    author={Wei, X. and Gonugondla, S. K. and Wang, S. and Ahmad, W. and Ray, B. and Qian, H. and Li, X. and Kumar, V. and Wang, Z. and Tian, Y. and Sun, Q. and Athiwaratkun, B. and Shang, M. and Ramanathan, M. K. and Bhatia, P. and Xiang, B.},
+    booktitle={Proceedings of the 31st ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE '23)},
+    pages={224--236},
+    year={2023},
+    doi={10.1145/3611643.3616302}
+}
+
+@article{giagnorio2025quantizing,
+    title={Quantizing Large Language Models for Code Generation: A Differentiated Replication},
+    author={Giagnorio, A. and Bavota, G.},
+    journal={arXiv preprint arXiv:2503.07103},
+    year={2025},
+    url={https://arxiv.org/abs/2503.07103}
+}
+
+@article{chicco2020advantages,
+    title={The advantages of the Matthews correlation coefficient ({MCC}) over {F1} score and accuracy in binary classification evaluation},
+    author={Chicco, D. and Jurman, G.},
+    journal={BMC Genomics},
+    volume={21},
+    year={2020},
+    doi={10.1186/s12864-019-6413-7}
+}
+
+@inproceedings{moussa2022evaluation,
+    title={On the use of evaluation measures for defect prediction studies},
+    author={Moussa, R. and Sarro, F.},
+    booktitle={Proceedings of the 31st ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA '22)},
+    year={2022},
+    doi={10.1145/3533767.3534405}
+}
+
+% --------------------------------------------------------------------
+% REFERENSI TAMBAHAN (VIBE CODING)
+% --------------------------------------------------------------------
+
+@article{elgendy2026responsible,
+    title={Responsible Vibe Coding: Architecture, Opportunities, and Research Agenda},
+    author={Elgendy, I. A. and Dwivedi, Y. K. and Al-Sharafi, M. A. and Hosny, M. and Helal, M. Y. and Crick, T. and Al-Busaidi, A. S.},
+    journal={Journal of Computer Information Systems},
+    pages={1--19},
+    year={2026}
+}
+
+@article{zhao2025vibecodingsafe,
+    title={Is Vibe Coding Safe? Benchmarking Vulnerability of Agent-Generated Code in Real-World Tasks},
+    author={Zhao, S. and Wang, D. and Zhang, K. and Luo, J. and Li, Z. and Li, L.},
+    journal={arXiv preprint arXiv:2512.03262},
+    year={2025},
+    url={https://arxiv.org/abs/2512.03262}
+}
+
+@misc{waseem2025vibecodingpracticeflow,
+    title={Vibe Coding in Practice: Flow, Technical Debt, and Guidelines for Sustainable Use},
+    author={Waseem, Muhammad and Ahmad, Aakash and Kemell, Kai-Kristian and Rasku, Jussi and Lahti, Sami and M{\"a}kel{\"a}, Kalle and Abrahamsson, Pekka},
+    year={2025},
+    eprint={2512.11922},
+    archivePrefix={arXiv},
+    primaryClass={cs.SE},
+    url={https://arxiv.org/abs/2512.11922}
 }
